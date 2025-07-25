@@ -30,6 +30,9 @@
       "TestKaijuSystem": {
         "$path": "src/TestKaijuSystem.luau"
       },
+      "TestClassSystem": {
+        "$path": "src/TestClassSystem.luau"
+      },
       "Main": {
         "$path": "src/server_code/Main.server.luau"
       },
