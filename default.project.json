@@ -10,53 +10,53 @@
         "$path": "src/server_code/Main.server.luau"
       },
       "RunTests": {
-        "$path": "src/RunTests.server.lua"
+        "$path": "src/RunTests.server.luau"
       },
       "TestEZ": {
         "$className": "Folder",
         "TestBootstrap": {
-          "$path": "src/TestEZ/TestBootstrap.lua"
+          "$path": "src/TestEZ/TestBootstrap.luau"
         },
         "TestEnum": {
-          "$path": "src/TestEZ/TestEnum.lua"
+          "$path": "src/TestEZ/TestEnum.luau"
         },
         "TestPlan": {
-          "$path": "src/TestEZ/TestPlan.lua"
+          "$path": "src/TestEZ/TestPlan.luau"
         },
         "TestPlanner": {
-          "$path": "src/TestEZ/TestPlanner.lua"
+          "$path": "src/TestEZ/TestPlanner.luau"
         },
         "TestResults": {
-          "$path": "src/TestEZ/TestResults.lua"
+          "$path": "src/TestEZ/TestResults.luau"
         },
         "TestRunner": {
-          "$path": "src/TestEZ/TestRunner.lua"
+          "$path": "src/TestEZ/TestRunner.luau"
         },
         "TestSession": {
-          "$path": "src/TestEZ/TestSession.lua"
+          "$path": "src/TestEZ/TestSession.luau"
         },
         "Context": {
-          "$path": "src/TestEZ/Context.lua"
+          "$path": "src/TestEZ/Context.luau"
         },
         "Expectation": {
-          "$path": "src/TestEZ/Expectation.lua"
+          "$path": "src/TestEZ/Expectation.luau"
         },
         "ExpectationContext": {
-          "$path": "src/TestEZ/ExpectationContext.lua"
+          "$path": "src/TestEZ/ExpectationContext.luau"
         },
         "LifecycleHooks": {
-          "$path": "src/TestEZ/LifecycleHooks.lua"
+          "$path": "src/TestEZ/LifecycleHooks.luau"
         },
         "Reporters": {
           "$className": "Folder",
           "TeamCityReporter": {
-            "$path": "src/TestEZ/Reporters/TeamCityReporter.lua"
+            "$path": "src/TestEZ/Reporters/TeamCityReporter.luau"
           },
           "TextReporter": {
-            "$path": "src/TestEZ/Reporters/TextReporter.lua"
+            "$path": "src/TestEZ/Reporters/TextReporter.luau"
           },
           "TextReporterQuiet": {
-            "$path": "src/TestEZ/Reporters/TextReporterQuiet.lua"
+            "$path": "src/TestEZ/Reporters/TextReporterQuiet.luau"
           }
         }
       },
