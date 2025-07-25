@@ -5,15 +5,21 @@
     "ReplicatedStorage": {
       "$path": "src/shared"
     },
+    "ServerStorage": {
+      "$className": "ServerStorage",
+      "Tests": {
+        "$path": "src/ServerStorage/Tests"
+      },
+      "RunTests": {
+        "$path": "src/ServerStorage/RunTests.server.luau"
+      }
+    },
     "ServerScriptService": {
       "TestScript": {
         "$path": "src/TestScript.server.luau"
       },
       "Main": {
         "$path": "src/server_code/Main.server.luau"
-      },
-      "RunTests": {
-        "$path": "src/RunTests.server.luau"
       },
       "TestEZ": {
         "$className": "Folder",
