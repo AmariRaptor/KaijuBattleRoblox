@@ -6,6 +6,9 @@
       "$path": "src/shared"
     },
     "ServerScriptService": {
+      "TestScript": {
+        "$path": "src/TestScript.server.luau"
+      },
       "Main": {
         "$path": "src/server_code/Main.server.luau"
       },
