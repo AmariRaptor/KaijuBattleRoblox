@@ -48,6 +48,12 @@
       "ClassSystemMinimalTest": {
         "$path": "src/ClassSystemMinimalTest.lua"
       },
+      "SimpleReturnTest": {
+        "$path": "src/SimpleReturnTest.lua"
+      },
+      "ClassSystemDirectTest": {
+        "$path": "src/ClassSystemDirectTest.lua"
+      },
       "Main": {
         "$path": "src/server_code/Main.server.luau"
       },

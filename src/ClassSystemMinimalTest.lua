@@ -62,10 +62,17 @@ if not success then
     return {success = false, message = "Test error: " .. tostring(message)}
 end
 
+-- Ensure we return a proper result table
+local result = {}
 if type(message) == "string" and message:find("passed") then
     print("✅ " .. message)
-    return {success = true, message = message}
+    result.success = true
+    result.message = message
 else
     print("❌ Test failed: " .. tostring(message))
-    return {success = false, message = message}
+    result.success = false
+    result.message = message or "Unknown failure"
 end
+
+-- Return the result table
+return result
