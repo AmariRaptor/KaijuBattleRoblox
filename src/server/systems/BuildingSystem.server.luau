@@ -1,3 +1,4 @@
+--!strict
                                                     -- BuildingSystem.lua
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local MainModule = require(ReplicatedStorage:WaitForChild("MainModule"))

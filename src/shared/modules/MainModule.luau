@@ -1,3 +1,4 @@
+--!strict
 -- MainModule.lua
 local MainModule = {}
 
