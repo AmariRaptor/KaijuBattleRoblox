@@ -91,9 +91,6 @@
       "$className": "ServerStorage",
       "Tests": {
         "$path": "src/tests"
-      },
-      "RunTests": {
-        "$path": "src/RunTests.lua"
       }
     },
     "Workspace": {

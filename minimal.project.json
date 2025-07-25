@@ -1,0 +1,11 @@
+{
+  "name": "KaijuBattleRoblox",
+  "tree": {
+    "$className": "DataModel",
+    "ServerScriptService": {
+      "TestScript": {
+        "$path": "src/TestScript.server.luau"
+      }
+    }
+  }
+}
