@@ -54,6 +54,9 @@
       "ClassSystemDirectTest": {
         "$path": "src/ClassSystemDirectTest.lua"
       },
+      "KaijuSystemDirectTest": {
+        "$path": "src/KaijuSystemDirectTest.lua"
+      },
       "Main": {
         "$path": "src/server_code/Main.server.luau"
       },
