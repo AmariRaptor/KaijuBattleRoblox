@@ -8,7 +8,7 @@
     "ServerStorage": {
       "$className": "ServerStorage",
       "Tests": {
-        "$path": "src/ServerStorage/Tests"
+        "$path": ["src/ServerStorage/Tests", "src/tests"]
       },
       "KaijuSystemTest": {
         "$path": "src/ServerStorage/Tests/KaijuSystemTest.luau"
@@ -99,12 +99,7 @@
         "$path": "src/client"
       }
     },
-    "ServerStorage": {
-      "$className": "ServerStorage",
-      "Tests": {
-        "$path": "src/tests"
-      }
-    },
+
     "Workspace": {
       "$properties": {
         "FilteringEnabled": true
