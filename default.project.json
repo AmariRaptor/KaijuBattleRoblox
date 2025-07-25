@@ -60,6 +60,9 @@
       "KaijuSystemDirectTest": {
         "$path": "src/KaijuSystemDirectTest.lua"
       },
+      "BuildingSystemDirectTest": {
+        "$path": "src/BuildingSystemDirectTest.lua"
+      },
       "Main": {
         "$path": "src/server_code/Main.server.luau"
       },
