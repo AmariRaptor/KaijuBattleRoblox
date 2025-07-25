@@ -63,6 +63,9 @@
       "BuildingSystemDirectTest": {
         "$path": "src/BuildingSystemDirectTest.lua"
       },
+      "TestRunner": {
+        "$path": "src/TestRunner.lua"
+      },
       "Main": {
         "$path": "src/server_code/Main.server.luau"
       },
