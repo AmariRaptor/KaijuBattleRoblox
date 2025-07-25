@@ -10,6 +10,9 @@
       "Tests": {
         "$path": "src/ServerStorage/Tests"
       },
+      "KaijuSystemTest": {
+        "$path": "src/ServerStorage/Tests/KaijuSystemTest.luau"
+      },
       "RunTests": {
         "$path": "src/ServerStorage/RunTests.server.luau"
       }
