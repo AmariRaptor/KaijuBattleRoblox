@@ -33,6 +33,12 @@
       "TestClassSystem": {
         "$path": "src/TestClassSystem.luau"
       },
+      "DirectTest": {
+        "$path": "src/DirectTest.lua"
+      },
+      "SimpleTest": {
+        "$path": "src/SimpleTest.lua"
+      },
       "Main": {
         "$path": "src/server_code/Main.server.luau"
       },

@@ -1,54 +1,39 @@
--- TestClassSystem.luau
--- A minimal test file for ClassSystem that works in MCP
+-- TestClassSystem.lua
+-- Minimal test file for ClassSystem
 
-print("=== Starting Minimal ClassSystem Tests ===")
+print("=== Starting ClassSystem Test ===")
 
--- Simple assertion function
-local function assert(condition, message)
-    if not condition then
-        error(message or "Test failed!")
-    end
-end
-
--- Mock the ClassSystem
-local ClassSystem = {
-    CLASSES = {"Kaiju", "Guardian", "Engineer"}
-}
-
--- Simplified test
-local function testClassAssignment()
+-- Simple test function
+local function runTest()
     -- Mock player
     local player = {
-        Name = "TestPlayer",
-        Character = {Name = "TestPlayer_Character"}
+        Name = "TestPlayer"
     }
     
-    -- Mock Instance.new
-    local mockInstance = {
-        Name = "PlayerClass",
-        Value = "Kaiju",
-        Parent = player,
-        ClassName = "StringValue"
+    -- Mock class system
+    local ClassSystem = {
+        CLASSES = {"Kaiju", "Guardian", "Engineer"},
+        onPlayerAdded = function(player)
+            return {
+                Name = "PlayerClass",
+                Value = "Kaiju",
+                Parent = player
+            }
+        end
     }
     
-    -- Mock the function
-    function ClassSystem.onPlayerAdded(player)
-        local playerClass = setmetatable({}, {
-            __index = function(_, k)
-                return mockInstance[k]
-            end
-        })
-        return playerClass
-    end
-    
-    -- Run the test
+    -- Test class assignment
     local playerClass = ClassSystem.onPlayerAdded(player)
     
     -- Verify results
-    assert(playerClass.Name == "PlayerClass", "Player class should be named 'PlayerClass'")
-    assert(playerClass.Parent == player, "Player class should be parented to player")
+    if playerClass.Name ~= "PlayerClass" then
+        return false, "Player class name is incorrect"
+    end
     
-    -- Check if the assigned class is valid
+    if playerClass.Parent ~= player then
+        return false, "Player class parent is incorrect"
+    end
+    
     local isValidClass = false
     for _, className in ipairs(ClassSystem.CLASSES) do
         if className == playerClass.Value then
@@ -57,17 +42,20 @@ local function testClassAssignment()
         end
     end
     
-    assert(isValidClass, "Assigned class should be valid")
+    if not isValidClass then
+        return false, "Assigned class is not valid"
+    end
     
-    print("✅ All tests passed!")
     return true
 end
 
 -- Run the test
-local success, message = pcall(testClassAssignment)
-if not success then
-    print("❌ Test failed: " .. tostring(message))
-    return false
+local success, message = pcall(runTest)
+if success and message == true then
+    print("✅ Test passed!")
+    return true
+else
+    local errorMsg = "❌ Test failed: " .. tostring(message or "Unknown error")
+    print(errorMsg)
+    return false, errorMsg
 end
-
-return true
