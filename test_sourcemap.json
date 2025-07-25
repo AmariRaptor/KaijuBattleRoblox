@@ -1,0 +1,1 @@
+{"name":"KaijuBattleRoblox-Test","className":"DataModel","filePaths":["test.project.json"],"children":[{"name":"ServerScriptService","className":"ServerScriptService","children":[{"name":"TestScript","className":"Script","filePaths":["src/test/HelloWorld.server.luau"]}]}]}

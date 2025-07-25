@@ -1,0 +1,12 @@
+{
+  "name": "KaijuBattleRoblox-Test",
+  "tree": {
+    "$className": "DataModel",
+    "ServerScriptService": {
+      "$className": "ServerScriptService",
+      "TestScript": {
+        "$path": "src/test/HelloWorld.server.luau"
+      }
+    }
+  }
+}

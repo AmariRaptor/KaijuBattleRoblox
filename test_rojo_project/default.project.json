@@ -1,0 +1,12 @@
+{
+  "name": "TestRojoProject",
+  "tree": {
+    "$className": "DataModel",
+    "ServerScriptService": {
+      "$className": "ServerScriptService",
+      "TestScript": {
+        "$path": "src/TestScript.server.luau"
+      }
+    }
+  }
+}

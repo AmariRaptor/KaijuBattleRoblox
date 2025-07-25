@@ -1,0 +1,2924 @@
+<roblox version="4">
+  <Item class="ReplicatedStorage" referent="0">
+    <Properties>
+      <string name="Name">ReplicatedStorage</string>
+    </Properties>
+    <Item class="Folder" referent="1">
+      <Properties>
+        <string name="Name">modules</string>
+      </Properties>
+      <Item class="ModuleScript" referent="2">
+        <Properties>
+          <string name="Name">Hello</string>
+          <string name="Source">--!strict
+return function()
+	print("Hello, world!")
+end</string>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="3">
+        <Properties>
+          <string name="Name">MainModule</string>
+          <string name="Source"><![CDATA[--!strict
+-- MainModule.lua
+local MainModule = {}
+
+-- Constants
+MainModule.GAME_NAME = "Kaiju Battle Arena"
+MainModule.MAX_PLAYERS = 8
+MainModule.BATTLE_ARENA_SIZE = Vector3.new(200, 50, 200)
+
+-- Player Classes
+MainModule.PLAYER_CLASSES = {
+    "Kaiju", -- Giant monster
+    "Guardian", -- City defender
+    "Engineer", -- Support role
+}
+
+-- Game States
+MainModule.GAME_STATES = {
+    LOBBY = 0,
+    PREPARATION = 1,
+    BATTLE = 2,
+    END = 3
+}
+
+-- Configuration
+MainModule.CONFIG = {
+    ROUND_TIME = 300, -- 5 minutes
+    SPAWN_DELAY = 5,
+    REGENERATION_RATE = 1,
+    DAMAGE_MULTIPLIER = 1.0,
+    
+    -- Class-specific settings
+    KAIJU = {
+        HEALTH = 500,
+        ENERGY = 100,
+        ATTACK_COOLDOWN = 2,
+        ABILITIES = {
+            ENERGY_BEAM = {
+                DAMAGE = 50,
+                COOLDOWN = 10,
+                RANGE = 100
+            },
+            ROAR = {
+                STUN_DURATION = 2,
+                COOLDOWN = 20,
+                RANGE = 50
+            }
+        }
+    },
+    
+    GUARDIAN = {
+        HEALTH = 200,
+        SHIELD = 100,
+        REPAIR_RATE = 5,
+        ABILITIES = {
+            SHIELD_GENERATOR = {
+                DURATION = 10,
+                COOLDOWN = 30,
+                RANGE = 20
+            },
+            MISSILE_BARRAGE = {
+                DAMAGE = 30,
+                COOLDOWN = 15,
+                COUNT = 5
+            }
+        }
+    },
+    
+    ENGINEER = {
+        HEALTH = 150,
+        ENERGY = 200,
+        REPAIR_RATE = 10,
+        ABILITIES = {
+            HEAL_BEAM = {
+                HEAL_AMOUNT = 20,
+                COOLDOWN = 5,
+                RANGE = 50
+            },
+            TURRET = {
+                DAMAGE = 15,
+                COOLDOWN = 20,
+                DURATION = 60
+            }
+        }
+    }
+}
+
+return MainModule
+]]></string>
+        </Properties>
+      </Item>
+    </Item>
+  </Item>
+  <Item class="ServerScriptService" referent="4">
+    <Properties>
+      <string name="Name">ServerScriptService</string>
+    </Properties>
+    <Item class="Script" referent="5">
+      <Properties>
+        <string name="Name">Main</string>
+        <token name="RunContext">0</token>
+        <string name="Source">--!strict
+
+print("Init script started.")
+
+-- Modules
+local ClassSystem = require(script.Parent.systems.ClassSystem)
+local CharacterSystem = require(script.Parent.systems.CharacterSystem)
+
+-- Initialize Systems
+ClassSystem.init()
+CharacterSystem.init()
+
+print("Server systems initialized.")</string>
+      </Properties>
+    </Item>
+    <Item class="Script" referent="6">
+      <Properties>
+        <string name="Name">RunTests</string>
+        <token name="RunContext">0</token>
+        <string name="Source"><![CDATA[--!strict
+-- Test runner script for TestEZ
+
+-- Get TestEZ modules
+local TestEZ = {
+    TestBootstrap = require(game:GetService("ServerScriptService").TestEZ.TestBootstrap),
+    TextReporter = require(game:GetService("ServerScriptService").TestEZ.Reporters.TextReporter)
+}
+
+-- Find all test files in the tests directory
+local function findTestFiles()
+    local testFiles = {}
+    local testsFolder = game:GetService("ServerStorage"):FindFirstChild("Tests")
+    
+    if not testsFolder then
+        warn("Tests folder not found in ServerStorage")
+        return testFiles
+    end
+    
+    -- Find all test files recursively
+    local function scan(folder)
+        for _, child in ipairs(folder:GetChildren()) do
+            if child:IsA("ModuleScript") and child.Name:match("%.spec$") then
+                table.insert(testFiles, child)
+            elseif child:IsA("Folder") then
+                scan(child)
+            end
+        end
+    end
+    
+    scan(testsFolder)
+    return testFiles
+end
+
+-- Run all tests
+local function runTests()
+    print("🚀 Running tests...\n")
+    
+    local testFiles = findTestFiles()
+    
+    if #testFiles == 0 then
+        warn("No test files found!")
+        return
+    end
+    
+    local testModules = {}
+    
+    for _, moduleScript in ipairs(testFiles) do
+        local success, testModule = pcall(require, moduleScript)
+        if success then
+            table.insert(testModules, {
+                method = testModule,
+                path = {moduleScript.Name},
+                pathStringForSorting = moduleScript:GetFullName()
+            })
+        else
+            warn("Failed to load test module", moduleScript:GetFullName(), "\n", testModule)
+        end
+    end
+    
+    if #testModules == 0 then
+        warn("No valid test modules found!")
+        return
+    end
+    
+    -- Run tests with TextReporter
+    local success, results = pcall(function()
+        return TestEZ.TestBootstrap:run(testModules, TestEZ.TextReporter, {
+            testNamePattern = nil, -- Run all tests
+            showTimingInfo = true,
+            extraEnvironment = {}
+        })
+    end)
+    
+    if not success then
+        warn("Error running tests:", results)
+    else
+        print("\n✅ Tests completed!")
+    end
+    
+    return results
+end
+
+-- Run tests when the script runs
+return runTests()
+]]></string>
+      </Properties>
+    </Item>
+    <Item class="Folder" referent="7">
+      <Properties>
+        <string name="Name">TestEZ</string>
+      </Properties>
+      <Item class="ModuleScript" referent="8">
+        <Properties>
+          <string name="Name">Context</string>
+          <string name="Source"><![CDATA[--[[
+	The Context object implements a write-once key-value store. It also allows
+	for a new Context object to inherit the entries from an existing one.
+]]
+local Context = {}
+
+function Context.new(parent)
+	local meta = {}
+	local index = {}
+	meta.__index = index
+
+	if parent then
+		for key, value in pairs(getmetatable(parent).__index) do
+			index[key] = value
+		end
+	end
+
+	function meta.__newindex(_obj, key, value)
+		assert(index[key] == nil, string.format("Cannot reassign %s in context", tostring(key)))
+		index[key] = value
+	end
+
+	return setmetatable({}, meta)
+end
+
+return Context
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="9">
+        <Properties>
+          <string name="Name">Expectation</string>
+          <string name="Source"><![CDATA[--[[
+	Allows creation of expectation statements designed for behavior-driven
+	testing (BDD). See Chai (JS) or RSpec (Ruby) for examples of other BDD
+	frameworks.
+
+	The Expectation class is exposed to tests as a function called `expect`:
+
+		expect(5).to.equal(5)
+		expect(foo()).to.be.ok()
+
+	Expectations can be negated using .never:
+
+		expect(true).never.to.equal(false)
+
+	Expectations throw errors when their conditions are not met.
+]]
+
+local Expectation = {}
+
+--[[
+	These keys don't do anything except make expectations read more cleanly
+]]
+local SELF_KEYS = {
+	to = true,
+	be = true,
+	been = true,
+	have = true,
+	was = true,
+	at = true,
+}
+
+--[[
+	These keys invert the condition expressed by the Expectation.
+]]
+local NEGATION_KEYS = {
+	never = true,
+}
+
+--[[
+	Extension of Lua's 'assert' that lets you specify an error level.
+]]
+local function assertLevel(condition, message, level)
+	message = message or "Assertion failed!"
+	level = level or 1
+
+	if not condition then
+		error(message, level + 1)
+	end
+end
+
+--[[
+	Returns a version of the given method that can be called with either . or :
+]]
+local function bindSelf(self, method)
+	return function(firstArg, ...)
+		if firstArg == self then
+			return method(self, ...)
+		else
+			return method(self, firstArg, ...)
+		end
+	end
+end
+
+local function formatMessage(result, trueMessage, falseMessage)
+	if result then
+		return trueMessage
+	else
+		return falseMessage
+	end
+end
+
+--[[
+	Create a new expectation
+]]
+function Expectation.new(value)
+	local self = {
+		value = value,
+		successCondition = true,
+		condition = false,
+		matchers = {},
+		_boundMatchers = {},
+	}
+
+	setmetatable(self, Expectation)
+
+	self.a = bindSelf(self, self.a)
+	self.an = self.a
+	self.ok = bindSelf(self, self.ok)
+	self.equal = bindSelf(self, self.equal)
+	self.throw = bindSelf(self, self.throw)
+	self.near = bindSelf(self, self.near)
+
+	return self
+end
+
+function Expectation:__index(key)
+	if SELF_KEYS[key] then
+		return self
+	elseif NEGATION_KEYS[key] then
+		self.successCondition = not self.successCondition
+		return self
+	elseif self._boundMatchers[key] then
+		return self._boundMatchers[key]
+	end
+end
+
+--[[
+	Resets any modifiers on the expectation so that chained expectations like:
+
+		expect(5)
+			.never.to.equal(6)
+			.to.equal(5)
+
+	Work as expected.
+]]
+function Expectation:_resetModifiers()
+	self.successCondition = true
+end
+
+--[[
+	Assert that the expectation value is the given type.
+
+	expect(5).to.be.a("number")
+]]
+function Expectation:a(typeName)
+	local result = (type(self.value) == typeName) == self.successCondition
+
+	local message = formatMessage(self.successCondition,
+		("Expected value of type %q, got value %q of type %s"):format(
+			typeName,
+			tostring(self.value),
+			type(self.value)
+		),
+		("Expected value not of type %q, got value %q of type %s"):format(
+			typeName,
+			tostring(self.value),
+			type(self.value)
+		)
+	)
+
+	assertLevel(result, message, 3)
+	self:_resetModifiers()
+
+	return self
+end
+
+-- Make alias public on class
+Expectation.an = Expectation.a
+
+--[[
+	Assert that our expectation value is truthy
+]]
+function Expectation:ok()
+	local result = (self.value ~= nil) == self.successCondition
+
+	local message = formatMessage(self.successCondition,
+		("Expected value %q to be non-nil"):format(
+			tostring(self.value)
+		),
+		("Expected value %q to be nil"):format(
+			tostring(self.value)
+		)
+	)
+
+	assertLevel(result, message, 3)
+	self:_resetModifiers()
+
+	return self
+end
+
+--[[
+	Assert that our expectation value is equal to another value
+]]
+function Expectation:equal(otherValue)
+	local result = (self.value == otherValue) == self.successCondition
+
+	local message = formatMessage(self.successCondition,
+		("Expected value %q (%s), got %q (%s) instead"):format(
+			tostring(otherValue),
+			type(otherValue),
+			tostring(self.value),
+			type(self.value)
+		),
+		("Expected anything but value %q (%s)"):format(
+			tostring(otherValue),
+			type(otherValue)
+		)
+	)
+
+	assertLevel(result, message, 3)
+	self:_resetModifiers()
+
+	return self
+end
+
+--[[
+	Assert that our expectation value is equal to another value within some
+	inclusive limit.
+]]
+function Expectation:near(otherValue, limit)
+	assert(type(self.value) == "number", "Expectation value must be a number to use 'near'")
+	assert(type(otherValue) == "number", "otherValue must be a number")
+	assert(type(limit) == "number" or limit == nil, "limit must be a number or nil")
+
+	limit = limit or 1e-7
+
+	local result = (math.abs(self.value - otherValue) <= limit) == self.successCondition
+
+	local message = formatMessage(self.successCondition,
+		("Expected value to be near %f (within %f) but got %f instead"):format(
+			otherValue,
+			limit,
+			self.value
+		),
+		("Expected value to not be near %f (within %f) but got %f instead"):format(
+			otherValue,
+			limit,
+			self.value
+		)
+	)
+
+	assertLevel(result, message, 3)
+	self:_resetModifiers()
+
+	return self
+end
+
+--[[
+	Assert that our functoid expectation value throws an error when called.
+	An optional error message can be passed to assert that the error message
+	contains the given value.
+]]
+function Expectation:throw(messageSubstring)
+	local ok, err = pcall(self.value)
+	local result = ok ~= self.successCondition
+
+	if messageSubstring and not ok then
+		if self.successCondition then
+			result = err:find(messageSubstring, 1, true) ~= nil
+		else
+			result = err:find(messageSubstring, 1, true) == nil
+		end
+	end
+
+	local message
+
+	if messageSubstring then
+		message = formatMessage(self.successCondition,
+			("Expected function to throw an error containing %q, but it %s"):format(
+				messageSubstring,
+				err and ("threw: %s"):format(err) or "did not throw."
+			),
+			("Expected function to never throw an error containing %q, but it threw: %s"):format(
+				messageSubstring,
+				tostring(err)
+			)
+		)
+	else
+		message = formatMessage(self.successCondition,
+			"Expected function to throw an error, but it did not throw.",
+			("Expected function to succeed, but it threw an error: %s"):format(
+				tostring(err)
+			)
+		)
+	end
+
+	assertLevel(result, message, 3)
+	self:_resetModifiers()
+
+	return self
+end
+
+return Expectation
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="10">
+        <Properties>
+          <string name="Name">ExpectationContext</string>
+          <string name="Source"><![CDATA[local Expectation = require(script.Parent.Expectation)
+local checkMatcherNameCollisions = Expectation.checkMatcherNameCollisions
+
+local function copy(t)
+	local result = {}
+
+	for key, value in pairs(t) do
+		result[key] = value
+	end
+
+	return result
+end
+
+local ExpectationContext = {}
+ExpectationContext.__index = ExpectationContext
+
+function ExpectationContext.new(parent)
+	local self = {
+		_extensions = parent and copy(parent._extensions) or {},
+	}
+
+	return setmetatable(self, ExpectationContext)
+end
+
+function ExpectationContext:startExpectationChain(...)
+	return Expectation.new(...):extend(self._extensions)
+end
+
+function ExpectationContext:extend(config)
+	for key, value in pairs(config) do
+		assert(self._extensions[key] == nil, string.format("Cannot reassign %q in expect.extend", key))
+		assert(checkMatcherNameCollisions(key), string.format("Cannot overwrite matcher %q; it already exists", key))
+
+		self._extensions[key] = value
+	end
+end
+
+return ExpectationContext
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="11">
+        <Properties>
+          <string name="Name">LifecycleHooks</string>
+          <string name="Source"><![CDATA[local TestEnum = require(script.Parent.TestEnum)
+
+local LifecycleHooks = {}
+LifecycleHooks.__index = LifecycleHooks
+
+function LifecycleHooks.new()
+	local self = {
+		_stack = {},
+	}
+	return setmetatable(self, LifecycleHooks)
+end
+
+--[[
+	Returns an array of `beforeEach` hooks in FIFO order
+]]
+function LifecycleHooks:getBeforeEachHooks()
+	local key = TestEnum.NodeType.BeforeEach
+	local hooks = {}
+
+	for _, level in ipairs(self._stack) do
+		for _, hook in ipairs(level[key]) do
+			table.insert(hooks, hook)
+		end
+	end
+
+	return hooks
+end
+
+--[[
+	Returns an array of `afterEach` hooks in FILO order
+]]
+function LifecycleHooks:getAfterEachHooks()
+	local key = TestEnum.NodeType.AfterEach
+	local hooks = {}
+
+	for _, level in ipairs(self._stack) do
+		for _, hook in ipairs(level[key]) do
+			table.insert(hooks, 1, hook)
+		end
+	end
+
+	return hooks
+end
+
+--[[
+	Pushes uncalled beforeAll and afterAll hooks back up the stack
+]]
+function LifecycleHooks:popHooks()
+	table.remove(self._stack, #self._stack)
+end
+
+function LifecycleHooks:pushHooksFrom(planNode)
+	assert(planNode ~= nil)
+
+	table.insert(self._stack, {
+		[TestEnum.NodeType.BeforeAll] = self:_getHooksOfType(planNode.children, TestEnum.NodeType.BeforeAll),
+		[TestEnum.NodeType.AfterAll] = self:_getHooksOfType(planNode.children, TestEnum.NodeType.AfterAll),
+		[TestEnum.NodeType.BeforeEach] = self:_getHooksOfType(planNode.children, TestEnum.NodeType.BeforeEach),
+		[TestEnum.NodeType.AfterEach] = self:_getHooksOfType(planNode.children, TestEnum.NodeType.AfterEach),
+	})
+end
+
+--[[
+	Get the beforeAll hooks from the current level.
+]]
+function LifecycleHooks:getBeforeAllHooks()
+	return self._stack[#self._stack][TestEnum.NodeType.BeforeAll]
+end
+
+--[[
+	Get the afterAll hooks from the current level.
+]]
+function LifecycleHooks:getAfterAllHooks()
+	return self._stack[#self._stack][TestEnum.NodeType.AfterAll]
+end
+
+function LifecycleHooks:_getHooksOfType(nodes, key)
+	local hooks = {}
+
+	for _, node in ipairs(nodes) do
+		if node.type == key then
+			table.insert(hooks, node.callback)
+		end
+	end
+
+	return hooks
+end
+
+return LifecycleHooks
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="Folder" referent="12">
+        <Properties>
+          <string name="Name">Reporters</string>
+        </Properties>
+        <Item class="ModuleScript" referent="13">
+          <Properties>
+            <string name="Name">TeamCityReporter</string>
+            <string name="Source"><![CDATA[local TestService = game:GetService("TestService")
+
+local TestEnum = require(script.Parent.Parent.TestEnum)
+
+local TeamCityReporter = {}
+
+local function teamCityEscape(str)
+	str = string.gsub(str, "([]|'[])","|%1")
+	str = string.gsub(str, "\r", "|r")
+	str = string.gsub(str, "\n", "|n")
+	return str
+end
+
+local function teamCityEnterSuite(suiteName)
+	return string.format("##teamcity[testSuiteStarted name='%s']", teamCityEscape(suiteName))
+end
+
+local function teamCityLeaveSuite(suiteName)
+	return string.format("##teamcity[testSuiteFinished name='%s']", teamCityEscape(suiteName))
+end
+
+local function teamCityEnterCase(caseName)
+	return string.format("##teamcity[testStarted name='%s']", teamCityEscape(caseName))
+end
+
+local function teamCityLeaveCase(caseName)
+	return string.format("##teamcity[testFinished name='%s']", teamCityEscape(caseName))
+end
+
+local function teamCityFailCase(caseName, errorMessage)
+	return string.format("##teamcity[testFailed name='%s' message='%s']",
+		teamCityEscape(caseName), teamCityEscape(errorMessage))
+end
+
+local function reportNode(node, buffer, level)
+	buffer = buffer or {}
+	level = level or 0
+	if node.status == TestEnum.TestStatus.Skipped then
+		return buffer
+	end
+	if node.planNode.type == TestEnum.NodeType.Describe then
+		table.insert(buffer, teamCityEnterSuite(node.planNode.phrase))
+		for _, child in ipairs(node.children) do
+			reportNode(child, buffer, level + 1)
+		end
+		table.insert(buffer, teamCityLeaveSuite(node.planNode.phrase))
+	else
+		table.insert(buffer, teamCityEnterCase(node.planNode.phrase))
+		if node.status == TestEnum.TestStatus.Failure then
+			table.insert(buffer, teamCityFailCase(node.planNode.phrase, table.concat(node.errors,"\n")))
+		end
+		table.insert(buffer, teamCityLeaveCase(node.planNode.phrase))
+	end
+end
+
+local function reportRoot(node)
+	local buffer = {}
+
+	for _, child in ipairs(node.children) do
+		reportNode(child, buffer, 0)
+	end
+
+	return buffer
+end
+
+local function report(root)
+	local buffer = reportRoot(root)
+
+	return table.concat(buffer, "\n")
+end
+
+function TeamCityReporter.report(results)
+	local resultBuffer = {
+		"Test results:",
+		report(results),
+		("%d passed, %d failed, %d skipped"):format(
+			results.successCount,
+			results.failureCount,
+			results.skippedCount
+		)
+	}
+
+	print(table.concat(resultBuffer, "\n"))
+
+	if results.failureCount > 0 then
+		print(string.format("%%d test nodes reported failures.", results.failureCount))
+	end
+
+	if #results.errors > 0 then
+		print("Errors reported by tests:")
+		print("")
+
+		for _, message in ipairs(results.errors) do
+			TestService:Error(message)
+
+			-- Insert a blank line after each error
+			print("")
+		end
+	end
+end
+
+return TeamCityReporter
+]]></string>
+          </Properties>
+        </Item>
+        <Item class="ModuleScript" referent="14">
+          <Properties>
+            <string name="Name">TextReporter</string>
+            <string name="Source"><![CDATA[--[[
+	The TextReporter uses the results from a completed test to output text to
+	standard output and TestService.
+]]
+
+local TestService = game:GetService("TestService")
+
+local TestEnum = require(script.Parent.Parent.TestEnum)
+
+local INDENT = (" "):rep(3)
+local STATUS_SYMBOLS = {
+	[TestEnum.TestStatus.Success] = "+",
+	[TestEnum.TestStatus.Failure] = "-",
+	[TestEnum.TestStatus.Skipped] = "~"
+}
+local UNKNOWN_STATUS_SYMBOL = "?"
+
+local TextReporter = {}
+
+local function compareNodes(a, b)
+	return a.planNode.phrase:lower() < b.planNode.phrase:lower()
+end
+
+local function reportNode(node, buffer, level)
+	buffer = buffer or {}
+	level = level or 0
+
+	if node.status == TestEnum.TestStatus.Skipped then
+		return buffer
+	end
+
+	local line
+
+	if node.status then
+		local symbol = STATUS_SYMBOLS[node.status] or UNKNOWN_STATUS_SYMBOL
+
+		line = ("%s[%s] %s"):format(
+			INDENT:rep(level),
+			symbol,
+			node.planNode.phrase
+		)
+	else
+		line = ("%s%s"):format(
+			INDENT:rep(level),
+			node.planNode.phrase
+		)
+	end
+
+	table.insert(buffer, line)
+	table.sort(node.children, compareNodes)
+
+	for _, child in ipairs(node.children) do
+		reportNode(child, buffer, level + 1)
+	end
+
+	return buffer
+end
+
+local function reportRoot(node)
+	local buffer = {}
+	table.sort(node.children, compareNodes)
+
+	for _, child in ipairs(node.children) do
+		reportNode(child, buffer, 0)
+	end
+
+	return buffer
+end
+
+local function report(root)
+	local buffer = reportRoot(root)
+
+	return table.concat(buffer, "\n")
+end
+
+function TextReporter.report(results)
+	local resultBuffer = {
+		"Test results:",
+		report(results),
+		("%d passed, %d failed, %d skipped"):format(
+			results.successCount,
+			results.failureCount,
+			results.skippedCount
+		)
+	}
+
+	print(table.concat(resultBuffer, "\n"))
+
+	if results.failureCount > 0 then
+		print(string.format("%%d test nodes reported failures.", results.failureCount))
+	end
+
+	if #results.errors > 0 then
+		print("Errors reported by tests:")
+		print("")
+
+		for _, message in ipairs(results.errors) do
+			TestService:Error(message)
+
+			-- Insert a blank line after each error
+			print("")
+		end
+	end
+end
+
+return TextReporter
+]]></string>
+          </Properties>
+        </Item>
+        <Item class="ModuleScript" referent="15">
+          <Properties>
+            <string name="Name">TextReporterQuiet</string>
+            <string name="Source"><![CDATA[--[[
+	Copy of TextReporter that doesn't output successful tests.
+
+	This should be temporary, it's just a workaround to make CI environments
+	happy in the short-term.
+]]
+
+local TestService = game:GetService("TestService")
+
+local TestEnum = require(script.Parent.Parent.TestEnum)
+
+local INDENT = (" "):rep(3)
+local STATUS_SYMBOLS = {
+	[TestEnum.TestStatus.Success] = "+",
+	[TestEnum.TestStatus.Failure] = "-",
+	[TestEnum.TestStatus.Skipped] = "~"
+}
+local UNKNOWN_STATUS_SYMBOL = "?"
+
+local TextReporterQuiet = {}
+
+local function reportNode(node, buffer, level)
+	buffer = buffer or {}
+	level = level or 0
+
+	if node.status == TestEnum.TestStatus.Skipped then
+		return buffer
+	end
+
+	local line
+
+	if node.status ~= TestEnum.TestStatus.Success then
+		local symbol = STATUS_SYMBOLS[node.status] or UNKNOWN_STATUS_SYMBOL
+
+		line = ("%s[%s] %s"):format(
+			INDENT:rep(level),
+			symbol,
+			node.planNode.phrase
+		)
+	end
+
+	table.insert(buffer, line)
+
+	for _, child in ipairs(node.children) do
+		reportNode(child, buffer, level + 1)
+	end
+
+	return buffer
+end
+
+local function reportRoot(node)
+	local buffer = {}
+
+	for _, child in ipairs(node.children) do
+		reportNode(child, buffer, 0)
+	end
+
+	return buffer
+end
+
+local function report(root)
+	local buffer = reportRoot(root)
+
+	return table.concat(buffer, "\n")
+end
+
+function TextReporterQuiet.report(results)
+	local resultBuffer = {
+		"Test results:",
+		report(results),
+		("%d passed, %d failed, %d skipped"):format(
+			results.successCount,
+			results.failureCount,
+			results.skippedCount
+		)
+	}
+
+	print(table.concat(resultBuffer, "\n"))
+
+	if results.failureCount > 0 then
+		print(string.format("%%d test nodes reported failures.", results.failureCount))
+	end
+
+	if #results.errors > 0 then
+		print("Errors reported by tests:")
+		print("")
+
+		for _, message in ipairs(results.errors) do
+			TestService:Error(message)
+
+			-- Insert a blank line after each error
+			print("")
+		end
+	end
+end
+
+return TextReporterQuiet
+]]></string>
+          </Properties>
+        </Item>
+      </Item>
+      <Item class="ModuleScript" referent="16">
+        <Properties>
+          <string name="Name">TestBootstrap</string>
+          <string name="Source"><![CDATA[--[[
+	Provides an interface to quickly run and report tests from a given object.
+]]
+
+local TestPlanner = require(script.Parent.TestPlanner)
+local TestRunner = require(script.Parent.TestRunner)
+local TextReporter = require(script.Parent.Reporters.TextReporter)
+
+local TestBootstrap = {}
+
+local function stripSpecSuffix(name)
+	return (name:gsub("%.spec$", ""))
+end
+local function isSpecScript(aScript)
+	return aScript:IsA("ModuleScript") and aScript.Name:match("%.spec$")
+end
+
+local function getPath(module, root)
+	root = root or game
+
+	local path = {}
+	local last = module
+
+	if last.Name == "init.spec" then
+		-- Use the directory's node for init.spec files.
+		last = last.Parent
+	end
+
+	while last ~= nil and last ~= root do
+		table.insert(path, stripSpecSuffix(last.Name))
+		last = last.Parent
+	end
+	table.insert(path, stripSpecSuffix(root.Name))
+
+	return path
+end
+
+local function toStringPath(tablePath)
+	local stringPath = ""
+	local first = true
+	for _, element in ipairs(tablePath) do
+		if first then
+			stringPath = element
+			first = false
+		else
+			stringPath = element .. " " .. stringPath
+		end
+	end
+	return stringPath
+end
+
+function TestBootstrap:getModulesImpl(root, modules, current)
+	modules = modules or {}
+	current = current or root
+
+	if isSpecScript(current) then
+		local method = require(current)
+		local path = getPath(current, root)
+		local pathString = toStringPath(path)
+
+		table.insert(modules, {
+			method = method,
+			path = path,
+			pathStringForSorting = pathString:lower()
+		})
+	end
+end
+
+--[[
+	Find all the ModuleScripts in this tree that are tests.
+]]
+function TestBootstrap:getModules(root)
+	local modules = {}
+
+	self:getModulesImpl(root, modules)
+
+	for _, child in ipairs(root:GetDescendants()) do
+		self:getModulesImpl(root, modules, child)
+	end
+
+	return modules
+end
+
+--[[
+	Runs all test and reports the results using the given test reporter.
+
+	If no reporter is specified, a reasonable default is provided.
+
+	This function demonstrates the expected workflow with this testing system:
+	1. Locate test modules
+	2. Generate test plan
+	3. Run test plan
+	4. Report test results
+
+	This means we could hypothetically present a GUI to the developer that shows
+	the test plan before we execute it, allowing them to toggle specific tests
+	before they're run, but after they've been identified!
+]]
+function TestBootstrap:run(roots, reporter, otherOptions)
+	reporter = reporter or TextReporter
+
+	otherOptions = otherOptions or {}
+	local showTimingInfo = otherOptions["showTimingInfo"] or false
+	local testNamePattern = otherOptions["testNamePattern"]
+	local extraEnvironment = otherOptions["extraEnvironment"] or {}
+
+	if type(roots) ~= "table" then
+		error(("Bad argument #1 to TestBootstrap:run. Expected table, got %s"):format(typeof(roots)), 2)
+	end
+
+	local startTime = tick()
+
+	local modules = {}
+	for _, subRoot in ipairs(roots) do
+		local newModules = self:getModules(subRoot)
+
+		for _, newModule in ipairs(newModules) do
+			table.insert(modules, newModule)
+		end
+	end
+
+	local afterModules = tick()
+
+	local plan = TestPlanner.createPlan(modules, testNamePattern, extraEnvironment)
+	local afterPlan = tick()
+
+	local results = TestRunner.runPlan(plan)
+	local afterRun = tick()
+
+	reporter.report(results)
+	local afterReport = tick()
+
+	if showTimingInfo then
+		local timing = {
+			("Took %f seconds to locate test modules"):format(afterModules - startTime),
+			("Took %f seconds to create test plan"):format(afterPlan - afterModules),
+			("Took %f seconds to run tests"):format(afterRun - afterPlan),
+			("Took %f seconds to report tests"):format(afterReport - afterRun),
+		}
+
+		print(table.concat(timing, "\n"))
+	end
+
+	return results
+end
+
+return TestBootstrap
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="17">
+        <Properties>
+          <string name="Name">TestEnum</string>
+          <string name="Source"><![CDATA[--[[
+	Constants used throughout the testing framework.
+]]
+
+local TestEnum = {}
+
+TestEnum.TestStatus = {
+	Success = "Success",
+	Failure = "Failure",
+	Skipped = "Skipped"
+}
+
+TestEnum.NodeType = {
+	Describe = "Describe",
+	It = "It",
+	BeforeAll = "BeforeAll",
+	AfterAll = "AfterAll",
+	BeforeEach = "BeforeEach",
+	AfterEach = "AfterEach"
+}
+
+TestEnum.NodeModifier = {
+	None = "None",
+	Skip = "Skip",
+	Focus = "Focus"
+}
+
+return TestEnum
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="18">
+        <Properties>
+          <string name="Name">TestPlan</string>
+          <string name="Source"><![CDATA[--[[
+	Represents a tree of tests that have been loaded but not necessarily
+	executed yet.
+
+	TestPlan objects are produced by TestPlanner.
+]]
+
+local TestEnum = require(script.Parent.TestEnum)
+local Expectation = require(script.Parent.Expectation)
+
+local function newEnvironment(currentNode, extraEnvironment)
+	local env = {}
+
+	if extraEnvironment then
+		if type(extraEnvironment) ~= "table" then
+			error(("Bad argument #2 to newEnvironment. Expected table, got %s"):format(
+				typeof(extraEnvironment)), 2)
+		end
+
+		for key, value in pairs(extraEnvironment) do
+			env[key] = value
+		end
+	end
+
+	local function addChild(phrase, callback, nodeType, nodeModifier)
+		local node = currentNode:addChild(phrase, nodeType, nodeModifier)
+		node.callback = callback
+		if nodeType == TestEnum.NodeType.Describe then
+			node:expand()
+		end
+		return node
+	end
+
+	function env.describeFOCUS(phrase, callback)
+		addChild(phrase, callback, TestEnum.NodeType.Describe, TestEnum.NodeModifier.Focus)
+	end
+
+	function env.describeSKIP(phrase, callback)
+		addChild(phrase, callback, TestEnum.NodeType.Describe, TestEnum.NodeModifier.Skip)
+	end
+
+	function env.describe(phrase, callback, nodeModifier)
+		addChild(phrase, callback, TestEnum.NodeType.Describe, TestEnum.NodeModifier.None)
+	end
+
+	function env.itFOCUS(phrase, callback)
+		addChild(phrase, callback, TestEnum.NodeType.It, TestEnum.NodeModifier.Focus)
+	end
+
+	function env.itSKIP(phrase, callback)
+		addChild(phrase, callback, TestEnum.NodeType.It, TestEnum.NodeModifier.Skip)
+	end
+
+	function env.itFIXME(phrase, callback)
+		local node = addChild(phrase, callback, TestEnum.NodeType.It, TestEnum.NodeModifier.Skip)
+		warn("FIXME: broken test", node:getFullName())
+	end
+
+	function env.it(phrase, callback, nodeModifier)
+		addChild(phrase, callback, TestEnum.NodeType.It, TestEnum.NodeModifier.None)
+	end
+
+	-- Incrementing count
+	env.beforeAll = function(callback)
+		addChild("beforeAll", callback, TestEnum.NodeType.BeforeAll)
+	end
+
+	env.afterAll = function(callback)
+		addChild("afterAll", callback, TestEnum.NodeType.AfterAll)
+	end
+
+	env.beforeEach = function(callback)
+		addChild("beforeEach", callback, TestEnum.NodeType.BeforeEach)
+	end
+
+	env.afterEach = function(callback)
+		addChild("afterEach", callback, TestEnum.NodeType.AfterEach)
+	end
+
+	-- Aliases
+	env.fit = env.itFOCUS
+	env.xit = env.itSKIP
+	env.fdescribe = env.describeFOCUS
+	env.xdescribe = env.describeSKIP
+
+	env.expect = setmetatable({
+		extend = function(...)
+			error("Cannot call \"expect.extend\" from within a \"describe\" node.")
+		end,
+	}, {
+		__call = function(_self, ...)
+			return Expectation.new(...)
+		end,
+	})
+
+	return env
+end
+
+local TestNode = {}
+TestNode.__index = TestNode
+
+--[[
+	Create a new test node. A pointer to the test plan, a phrase to describe it
+	and the type of node it is are required. The modifier is optional and will
+	be None if left blank.
+]]
+function TestNode.new(plan, phrase, nodeType, nodeModifier)
+	nodeModifier = nodeModifier or TestEnum.NodeModifier.None
+
+	local node = {
+		plan = plan,
+		phrase = phrase,
+		type = nodeType,
+		modifier = nodeModifier,
+		children = {},
+		callback = nil,
+		parent = nil,
+	}
+
+	node.environment = newEnvironment(node, plan.extraEnvironment)
+	return setmetatable(node, TestNode)
+end
+
+local function getModifier(name, pattern, modifier)
+	if pattern and (modifier == nil or modifier == TestEnum.NodeModifier.None) then
+		if name:match(pattern) then
+			return TestEnum.NodeModifier.Focus
+		else
+			return TestEnum.NodeModifier.Skip
+		end
+	end
+	return modifier
+end
+
+function TestNode:addChild(phrase, nodeType, nodeModifier)
+	if nodeType == TestEnum.NodeType.It then
+		for _, child in pairs(self.children) do
+			if child.phrase == phrase then
+				error("Duplicate it block found: " .. child:getFullName())
+			end
+		end
+	end
+
+	local childName = self:getFullName() .. " " .. phrase
+	nodeModifier = getModifier(childName, self.plan.testNamePattern, nodeModifier)
+	local child = TestNode.new(self.plan, phrase, nodeType, nodeModifier)
+	child.parent = self
+	table.insert(self.children, child)
+	return child
+end
+
+--[[
+	Join the names of all the nodes back to the parent.
+]]
+function TestNode:getFullName()
+	if self.parent then
+		local parentPhrase = self.parent:getFullName()
+		if parentPhrase then
+			return parentPhrase .. " " .. self.phrase
+		end
+	end
+	return self.phrase
+end
+
+--[[
+	Expand a node by setting its callback environment and then calling it. Any
+	further it and describe calls within the callback will be added to the tree.
+]]
+function TestNode:expand()
+	local originalEnv = getfenv(self.callback)
+	local callbackEnv = setmetatable({}, { __index = originalEnv })
+	for key, value in pairs(self.environment) do
+		callbackEnv[key] = value
+	end
+	-- Copy 'script' directly to new env to make Studio debugger happy.
+	-- Studio debugger does not look into __index, because of security reasons
+	callbackEnv.script = originalEnv.script
+	setfenv(self.callback, callbackEnv)
+
+	local success, result = xpcall(self.callback, function(message)
+		return debug.traceback(tostring(message), 2)
+	end)
+
+	if not success then
+		self.loadError = result
+	end
+end
+
+local TestPlan = {}
+TestPlan.__index = TestPlan
+
+--[[
+	Create a new, empty TestPlan.
+]]
+function TestPlan.new(testNamePattern, extraEnvironment)
+	local plan = {
+		children = {},
+		testNamePattern = testNamePattern,
+		extraEnvironment = extraEnvironment,
+	}
+
+	return setmetatable(plan, TestPlan)
+end
+
+--[[
+	Add a new child under the test plan's root node.
+]]
+function TestPlan:addChild(phrase, nodeType, nodeModifier)
+	nodeModifier = getModifier(phrase, self.testNamePattern, nodeModifier)
+	local child = TestNode.new(self, phrase, nodeType, nodeModifier)
+	table.insert(self.children, child)
+	return child
+end
+
+--[[
+	Add a new describe node with the given method as a callback. Generates or
+	reuses all the describe nodes along the path.
+]]
+function TestPlan:addRoot(path, method)
+	local curNode = self
+	for i = #path, 1, -1 do
+		local nextNode = nil
+
+		for _, child in ipairs(curNode.children) do
+			if child.phrase == path[i] then
+				nextNode = child
+				break
+			end
+		end
+
+		if nextNode == nil then
+			nextNode = curNode:addChild(path[i], TestEnum.NodeType.Describe)
+		end
+
+		curNode = nextNode
+	end
+
+	curNode.callback = method
+	curNode:expand()
+end
+
+--[[
+	Calls the given callback on all nodes in the tree, traversed depth-first.
+]]
+function TestPlan:visitAllNodes(callback, root, level)
+	root = root or self
+	level = level or 0
+
+	for _, child in ipairs(root.children) do
+		callback(child, level)
+
+		self:visitAllNodes(callback, child, level + 1)
+	end
+end
+
+--[[
+	Visualizes the test plan in a simple format, suitable for debugging the test
+	plan's structure.
+]]
+function TestPlan:visualize()
+	local buffer = {}
+	self:visitAllNodes(function(node, level)
+		table.insert(buffer, (" "):rep(3 * level) .. node.phrase)
+	end)
+	return table.concat(buffer, "\n")
+end
+
+--[[
+	Gets a list of all nodes in the tree for which the given callback returns
+	true.
+]]
+function TestPlan:findNodes(callback)
+	local results = {}
+	self:visitAllNodes(function(node)
+		if callback(node) then
+			table.insert(results, node)
+		end
+	end)
+	return results
+end
+
+return TestPlan
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="19">
+        <Properties>
+          <string name="Name">TestPlanner</string>
+          <string name="Source"><![CDATA[--[[
+	Turns a series of specification functions into a test plan.
+
+	Uses a TestPlanBuilder to keep track of the state of the tree being built.
+]]
+local TestPlan = require(script.Parent.TestPlan)
+
+local TestPlanner = {}
+
+--[[
+	Create a new TestPlan from a list of specification functions.
+
+	These functions should call a combination of `describe` and `it` (and their
+	variants), which will be turned into a test plan to be executed.
+
+	Parameters:
+		- modulesList - list of tables describing test modules {
+			method, -- specification function described above
+			path, -- array of parent entires, first element is the leaf that owns `method`
+			pathStringForSorting -- a string representation of `path`, used for sorting of the test plan
+		}
+		- testNamePattern - Only tests matching this Lua pattern string will run. Pass empty or nil to run all tests
+		- extraEnvironment - Lua table holding additional functions and variables to be injected into the specification
+							function during execution
+]]
+function TestPlanner.createPlan(modulesList, testNamePattern, extraEnvironment)
+	local plan = TestPlan.new(testNamePattern, extraEnvironment)
+
+	table.sort(modulesList, function(a, b)
+		return a.pathStringForSorting < b.pathStringForSorting
+	end)
+
+	for _, module in ipairs(modulesList) do
+		plan:addRoot(module.path, module.method)
+	end
+
+	return plan
+end
+
+return TestPlanner
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="20">
+        <Properties>
+          <string name="Name">TestResults</string>
+          <string name="Source"><![CDATA[--[[
+	Represents a tree of test results.
+
+	Each node in the tree corresponds directly to a node in a corresponding
+	TestPlan, accessible via the 'planNode' field.
+
+	TestResults objects are produced by TestRunner using TestSession as state.
+]]
+
+local TestEnum = require(script.Parent.TestEnum)
+
+local STATUS_SYMBOLS = {
+	[TestEnum.TestStatus.Success] = "+",
+	[TestEnum.TestStatus.Failure] = "-",
+	[TestEnum.TestStatus.Skipped] = "~"
+}
+
+local TestResults = {}
+
+TestResults.__index = TestResults
+
+--[[
+	Create a new TestResults tree that's linked to the given TestPlan.
+]]
+function TestResults.new(plan)
+	local self = {
+		successCount = 0,
+		failureCount = 0,
+		skippedCount = 0,
+		planNode = plan,
+		children = {},
+		errors = {}
+	}
+
+	setmetatable(self, TestResults)
+
+	return self
+end
+
+--[[
+	Create a new result node that can be inserted into a TestResult tree.
+]]
+function TestResults.createNode(planNode)
+	local node = {
+		planNode = planNode,
+		children = {},
+		errors = {},
+		status = nil
+	}
+
+	return node
+end
+
+--[[
+	Visit all test result nodes, depth-first.
+]]
+function TestResults:visitAllNodes(callback, root)
+	root = root or self
+
+	for _, child in ipairs(root.children) do
+		callback(child)
+
+		self:visitAllNodes(callback, child)
+	end
+end
+
+--[[
+	Creates a debug visualization of the test results.
+]]
+function TestResults:visualize(root, level)
+	root = root or self
+	level = level or 0
+
+	local buffer = {}
+
+	for _, child in ipairs(root.children) do
+		if child.planNode.type == TestEnum.NodeType.It then
+			local symbol = STATUS_SYMBOLS[child.status] or "?"
+			local str = ("%s[%s] %s"):format(
+				(" "):rep(3 * level),
+				symbol,
+				child.planNode.phrase
+			)
+
+			if child.messages and #child.messages > 0 then
+				str = str .. "\n " .. (" "):rep(3 * level) .. table.concat(child.messages, "\n " .. (" "):rep(3 * level))
+			end
+
+			table.insert(buffer, str)
+		else
+			local str = ("%s%s"):format(
+				(" "):rep(3 * level),
+				child.planNode.phrase or ""
+			)
+
+			if child.status then
+				str = str .. (" (%s)"):format(child.status)
+			end
+
+			table.insert(buffer, str)
+
+			if #child.children > 0 then
+				local text = self:visualize(child, level + 1)
+				table.insert(buffer, text)
+			end
+		end
+	end
+
+	return table.concat(buffer, "\n")
+end
+
+return TestResults
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="21">
+        <Properties>
+          <string name="Name">TestRunner</string>
+          <string name="Source"><![CDATA[--[[
+	Contains the logic to run a test plan and gather test results from it.
+
+	TestRunner accepts a TestPlan object, executes the planned tests, and
+	produces a TestResults object. While the tests are running, the system's
+	state is contained inside a TestSession object.
+]]
+
+local TestEnum = require(script.Parent.TestEnum)
+local TestSession = require(script.Parent.TestSession)
+local LifecycleHooks = require(script.Parent.LifecycleHooks)
+
+local RUNNING_GLOBAL = "__TESTEZ_RUNNING_TEST__"
+
+local TestRunner = {
+	environment = {}
+}
+
+local function wrapExpectContextWithPublicApi(expectationContext)
+	return setmetatable({
+		extend = function(...)
+			expectationContext:extend(...)
+		end,
+	}, {
+		__call = function(_self, ...)
+			return expectationContext:startExpectationChain(...)
+		end,
+	})
+end
+
+--[[
+	Runs the given TestPlan and returns a TestResults object representing the
+	results of the run.
+]]
+function TestRunner.runPlan(plan)
+	local session = TestSession.new(plan)
+	local lifecycleHooks = LifecycleHooks.new()
+
+	local exclusiveNodes = plan:findNodes(function(node)
+		return node.modifier == TestEnum.NodeModifier.Focus
+	end)
+
+	session.hasFocusNodes = #exclusiveNodes > 0
+
+	TestRunner.runPlanNode(session, plan, lifecycleHooks)
+
+	return session:finalize()
+end
+
+--[[
+	Run the given test plan node and its descendants, using the given test
+	session to store all of the results.
+]]
+function TestRunner.runPlanNode(session, planNode, lifecycleHooks)
+	local function runCallback(callback, messagePrefix)
+		local success = true
+		local errorMessage
+		-- Any code can check RUNNING_GLOBAL to fork behavior based on
+		-- whether a test is running. We use this to avoid accessing
+		-- protected APIs; it's a workaround that will go away someday.
+		_G[RUNNING_GLOBAL] = true
+
+		messagePrefix = messagePrefix or ""
+
+		local testEnvironment = getfenv(callback)
+		local expectationContext = session:getExpectationContext()
+		testEnvironment.expect = wrapExpectContextWithPublicApi(expectationContext)
+
+		local ok, err = xpcall(callback, function(message)
+			return debug.traceback(tostring(message), 2)
+		end)
+
+		_G[RUNNING_GLOBAL] = nil
+
+		if not ok then
+			success = false
+			errorMessage = messagePrefix .. tostring(err)
+		end
+
+		return success, errorMessage
+	end
+
+	local function runNode(childPlanNode)
+		for _, hook in ipairs(lifecycleHooks:getBeforeEachHooks()) do
+			local success, errorMessage = runCallback(hook, "beforeEach hook: ")
+			if not success then
+				return false, errorMessage
+			end
+		end
+
+		local testSuccess, testErrorMessage = runCallback(childPlanNode.callback)
+
+		for _, hook in ipairs(lifecycleHooks:getAfterEachHooks()) do
+			local success, errorMessage = runCallback(hook, "afterEach hook: ")
+			if not success then
+				if not testSuccess then
+					return false, testErrorMessage .. "\nWhile cleaning up the failed test another error was found:\n" .. errorMessage
+				end
+				return false, errorMessage
+			end
+		end
+
+		if not testSuccess then
+			return false, testErrorMessage
+		end
+
+		return true, nil
+	end
+
+	lifecycleHooks:pushHooksFrom(planNode)
+
+	local halt = false
+	for _, hook in ipairs(lifecycleHooks:getBeforeAllHooks()) do
+		local success, errorMessage = runCallback(hook, "beforeAll hook: ")
+		if not success then
+			session:addDummyError("beforeAll", errorMessage)
+			halt = true
+		end
+	end
+
+	if not halt then
+		for _, childPlanNode in ipairs(planNode.children) do
+			if childPlanNode.type == TestEnum.NodeType.It then
+				session:pushNode(childPlanNode)
+				if session:shouldSkip() then
+					session:setSkipped()
+				else
+					local success, errorMessage = runNode(childPlanNode)
+
+					if success then
+						session:setSuccess()
+					else
+						session:setError(errorMessage)
+					end
+				end
+				session:popNode()
+			elseif childPlanNode.type == TestEnum.NodeType.Describe then
+				session:pushNode(childPlanNode)
+				TestRunner.runPlanNode(session, childPlanNode, lifecycleHooks)
+
+				-- Did we have an error trying build a test plan?
+				if childPlanNode.loadError then
+					local message = "Error during planning: " .. childPlanNode.loadError
+					session:setError(message)
+				else
+					session:setStatusFromChildren()
+				end
+				session:popNode()
+			end
+		end
+	end
+
+	for _, hook in ipairs(lifecycleHooks:getAfterAllHooks()) do
+		local success, errorMessage = runCallback(hook, "afterAll hook: ")
+		if not success then
+			session:addDummyError("afterAll", errorMessage)
+		end
+	end
+
+	lifecycleHooks:popHooks()
+end
+
+return TestRunner
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="22">
+        <Properties>
+          <string name="Name">TestSession</string>
+          <string name="Source"><![CDATA[--[[
+	Represents the state relevant while executing a test plan.
+
+	Used by TestRunner to produce a TestResults object.
+
+	Uses the same tree building structure as TestPlanBuilder; TestSession keeps
+	track of a stack of nodes that represent the current path through the tree.
+]]
+
+local TestEnum = require(script.Parent.TestEnum)
+local TestResults = require(script.Parent.TestResults)
+local Context = require(script.Parent.Context)
+local ExpectationContext = require(script.Parent.ExpectationContext)
+
+local TestSession = {}
+
+TestSession.__index = TestSession
+
+--[[
+	Create a TestSession related to the given TestPlan.
+
+	The resulting TestResults object will be linked to this TestPlan.
+]]
+function TestSession.new(plan)
+	local self = {
+		results = TestResults.new(plan),
+		nodeStack = {},
+		contextStack = {},
+		expectationContextStack = {},
+		hasFocusNodes = false
+	}
+
+	setmetatable(self, TestSession)
+
+	return self
+end
+
+--[[
+	Calculate success, failure, and skipped test counts in the tree at the
+	current point in the execution.
+]]
+function TestSession:calculateTotals()
+	local results = self.results
+
+	results.successCount = 0
+	results.failureCount = 0
+	results.skippedCount = 0
+
+	results:visitAllNodes(function(node)
+		local status = node.status
+		local nodeType = node.planNode.type
+
+		if nodeType == TestEnum.NodeType.It then
+			if status == TestEnum.TestStatus.Success then
+				results.successCount = results.successCount + 1
+			elseif status == TestEnum.TestStatus.Failure then
+				results.failureCount = results.failureCount + 1
+			elseif status == TestEnum.TestStatus.Skipped then
+				results.skippedCount = results.skippedCount + 1
+			end
+		end
+	end)
+end
+
+--[[
+	Gathers all of the errors reported by tests and puts them at the top level
+	of the TestResults object.
+]]
+function TestSession:gatherErrors()
+	local results = self.results
+
+	results.errors = {}
+
+	results:visitAllNodes(function(node)
+		if #node.errors > 0 then
+			local newError = {
+				path = node.planNode:getFullName(),
+				messages = node.errors
+			}
+			table.insert(results.errors, newError)
+		end
+	end)
+end
+
+--[[
+	Finalizes the TestSession, returning the produced TestResults object.
+]]
+function TestSession:finalize()
+	self:calculateTotals()
+	self:gatherErrors()
+	return self.results
+end
+
+--[[
+	Pushes a new node onto the navigation stack.
+]]
+function TestSession:pushNode(planNode)
+	local parent = nil
+	if #self.nodeStack > 0 then
+		parent = self.nodeStack[#self.nodeStack]
+	end
+
+	local node = self.results:addChild(parent, planNode)
+	table.insert(self.nodeStack, node)
+	table.insert(self.contextStack, Context.new())
+	table.insert(self.expectationContextStack, ExpectationContext.new())
+end
+
+--[[
+	Pops a node off the navigation stack.
+]]
+function TestSession:popNode()
+	assert(#self.nodeStack > 0, "Tried to pop from an empty node stack!")
+	table.remove(self.nodeStack, #self.nodeStack)
+	table.remove(self.contextStack, #self.contextStack)
+	table.remove(self.expectationContextStack, #self.expectationContextStack)
+end
+
+--[[
+	Gets the Context object for the current node.
+]]
+function TestSession:getContext()
+	assert(#self.contextStack > 0, "Tried to get context from an empty stack!")
+	return self.contextStack[#self.contextStack]
+end
+
+
+function TestSession:getExpectationContext()
+	assert(#self.expectationContextStack > 0, "Tried to get expectationContext from an empty stack!")
+	return self.expectationContextStack[#self.expectationContextStack]
+end
+
+--[[
+	Tells whether the current test we're in should be skipped.
+]]
+function TestSession:shouldSkip()
+	-- If our test tree had any exclusive tests, then normal tests are skipped!
+	if self.hasFocusNodes then
+		for i = #self.nodeStack, 1, -1 do
+			local node = self.nodeStack[i]
+
+			-- Skipped tests are still skipped
+			if node.planNode.modifier == TestEnum.NodeModifier.Skip then
+				return true
+			end
+
+			-- Focused tests are the only ones that aren't skipped
+			if node.planNode.modifier == TestEnum.NodeModifier.Focus then
+				return false
+			end
+		end
+
+		return true
+	else
+		for i = #self.nodeStack, 1, -1 do
+			local node = self.nodeStack[i]
+
+			if node.planNode.modifier == TestEnum.NodeModifier.Skip then
+				return true
+			end
+		end
+	end
+
+	return false
+end
+
+--[[
+	Set the current node's status to Success.
+]]
+function TestSession:setSuccess()
+	assert(#self.nodeStack > 0, "Attempting to set success status on empty stack")
+	self.nodeStack[#self.nodeStack].status = TestEnum.TestStatus.Success
+end
+
+--[[
+	Set the current node's status to Skipped.
+]]
+function TestSession:setSkipped()
+	assert(#self.nodeStack > 0, "Attempting to set skipped status on empty stack")
+	self.nodeStack[#self.nodeStack].status = TestEnum.TestStatus.Skipped
+end
+
+--[[
+	Set the current node's status to Failure and adds a message to its list of
+	errors.
+]]
+function TestSession:setError(message)
+	assert(#self.nodeStack > 0, "Attempting to set error status on empty stack")
+	local last = self.nodeStack[#self.nodeStack]
+	last.status = TestEnum.TestStatus.Failure
+	table.insert(last.errors, message)
+end
+
+--[[
+	Add a dummy child node to the current node to hold the given error. This
+	allows an otherwise empty describe node to report an error in a more natural
+	way.
+]]
+function TestSession:addDummyError(phrase, message)
+	self:pushNode({type = TestEnum.NodeType.It, phrase = phrase})
+	self:setError(message)
+	self:popNode()
+	self.nodeStack[#self.nodeStack].status = TestEnum.TestStatus.Failure
+end
+
+--[[
+	Set the current node's status based on that of its children. If all children
+	are skipped, mark it as skipped. If any are fails, mark it as failed.
+	Otherwise, mark it as success.
+]]
+function TestSession:setStatusFromChildren()
+	assert(#self.nodeStack > 0, "Attempting to set status from children on empty stack")
+
+	local last = self.nodeStack[#self.nodeStack]
+	local status = TestEnum.TestStatus.Success
+	local skipped = true
+
+	-- If all children were skipped, then we were skipped
+	-- If any child failed, then we failed!
+	for _, child in ipairs(last.children) do
+		if child.status ~= TestEnum.TestStatus.Skipped then
+			skipped = false
+
+			if child.status == TestEnum.TestStatus.Failure then
+				status = TestEnum.TestStatus.Failure
+			end
+		end
+	end
+
+	if skipped then
+		status = TestEnum.TestStatus.Skipped
+	end
+
+	last.status = status
+end
+
+return TestSession
+]]></string>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Script" referent="23">
+      <Properties>
+        <string name="Name">TestScript</string>
+        <token name="RunContext">0</token>
+        <string name="Source"><![CDATA[--!strict
+print("Test script loaded successfully!")
+return "Test script executed"
+]]></string>
+      </Properties>
+    </Item>
+    <Item class="Folder" referent="24">
+      <Properties>
+        <string name="Name">systems</string>
+      </Properties>
+      <Item class="Script" referent="25">
+        <Properties>
+          <string name="Name">BuildingSystem</string>
+          <token name="RunContext">0</token>
+          <string name="Source"><![CDATA[--!strict
+                                                    -- BuildingSystem.lua
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local MainModule = require(ReplicatedStorage:WaitForChild("MainModule"))
+
+local BuildingSystem = {}
+
+-- Building types and their properties
+BuildingSystem.BUILDING_TYPES = {
+    SKYSCRAPER = {
+        HEALTH = 200,
+        SIZE = Vector3.new(10, 50, 10),
+        DAMAGE = 5,
+        REPAIR_RATE = 2,
+        EFFECTS = {
+            SMOKE = true,
+            LIGHTS = true
+        }
+    },
+    FACTORY = {
+        HEALTH = 150,
+        SIZE = Vector3.new(20, 10, 20),
+        DAMAGE = 10,
+        REPAIR_RATE = 1,
+        EFFECTS = {
+            SMOKE = true,
+            FIRE = true
+        }
+    },
+    POWER_PLANT = {
+        HEALTH = 250,
+        SIZE = Vector3.new(15, 15, 15),
+        DAMAGE = 8,
+        REPAIR_RATE = 3,
+        EFFECTS = {
+            ENERGY = true,
+            LIGHTS = true
+        }
+    },
+    HOSPITAL = {
+        HEALTH = 180,
+        SIZE = Vector3.new(12, 12, 12),
+        DAMAGE = 7,
+        REPAIR_RATE = 2,
+        EFFECTS = {
+            LIGHTS = true,
+            MEDICAL = true
+        }
+    },
+    MILITARY_BASE = {
+        HEALTH = 300,
+        SIZE = Vector3.new(25, 15, 25),
+        DAMAGE = 15,
+        REPAIR_RATE = 1,
+        EFFECTS = {
+            SMOKE = true,
+            FIRE = true,
+            LIGHTS = true
+        }
+    }
+}
+
+function BuildingSystem:CreateBuilding(buildingType, position)
+    local building = Instance.new("Model")
+    building.Name = buildingType
+    
+    -- Get building properties
+    local buildingProps = self.BUILDING_TYPES[buildingType]
+    
+    -- Create base structure
+    local base = Instance.new("Part")
+    base.Size = buildingProps.SIZE
+    base.Position = position
+    base.Anchored = true
+    base.Parent = building
+    
+    -- Add building-specific parts
+    if buildingType == "SKYSCRAPER" then
+        self:createSkyscraper(building)
+    elseif buildingType == "FACTORY" then
+        self:createFactory(building)
+    elseif buildingType == "POWER_PLANT" then
+        self:createPowerPlant(building)
+    elseif buildingType == "HOSPITAL" then
+        self:createHospital(building)
+    elseif buildingType == "MILITARY_BASE" then
+        self:createMilitaryBase(building)
+    end
+    
+    -- Add health system
+    local health = Instance.new("IntValue")
+    health.Name = "Health"
+    health.Value = buildingProps.HEALTH
+    health.Parent = building
+    
+    -- Add repair rate
+    local repair = Instance.new("IntValue")
+    repair.Name = "RepairRate"
+    repair.Value = buildingProps.REPAIR_RATE
+    repair.Parent = building
+    
+    -- Add damage value
+    local damage = Instance.new("IntValue")
+    damage.Name = "Damage"
+    damage.Value = buildingProps.DAMAGE
+    damage.Parent = building
+    
+    -- Add effects
+    if buildingProps.EFFECTS.SMOKE then
+        self:addSmokeEffect(building)
+    end
+    if buildingProps.EFFECTS.FIRE then
+        self:addFireEffect(building)
+    end
+    if buildingProps.EFFECTS.LIGHTS then
+        self:addLightEffect(building)
+    end
+    if buildingProps.EFFECTS.ENERGY then
+        self:addEnergyEffect(building)
+    end
+    if buildingProps.EFFECTS.MEDICAL then
+        self:addMedicalEffect(building)
+    end
+    
+    -- Add destruction effects
+    local destruction = Instance.new("Folder")
+    destruction.Name = "Destruction"
+    destruction.Parent = building
+    
+    return building
+end
+
+function BuildingSystem:createSkyscraper(building)
+    -- Create main structure
+    local tower = Instance.new("Part")
+    tower.Size = Vector3.new(8, 80, 8)
+    tower.Position = building:GetPrimaryPartCFrame().Position + Vector3.new(0, 40, 0)
+    tower.Parent = building
+    
+    -- Add windows
+    for i = 1, 16 do
+        local window = Instance.new("Part")
+        window.Size = Vector3.new(2, 1, 2)
+        window.Position = tower.Position + Vector3.new(0, i * 5, 0)
+        window.BrickColor = BrickColor.new("Bright blue")
+        window.Parent = building
+    end
+    
+    -- Add antenna
+    local antenna = Instance.new("Part")
+    antenna.Size = Vector3.new(1, 10, 1)
+    antenna.Position = tower.Position + Vector3.new(0, 85, 0)
+    antenna.BrickColor = BrickColor.new("Neon green")
+    antenna.Parent = building
+end
+
+function BuildingSystem:createFactory(building)
+    -- Create factory structure
+    local factory = Instance.new("Part")
+    factory.Size = Vector3.new(30, 15, 30)
+    factory.Position = building:GetPrimaryPartCFrame().Position + Vector3.new(0, 7.5, 0)
+    factory.Parent = building
+    
+    -- Add smokestacks
+    for i = -1, 1, 2 do
+        local smokestack = Instance.new("Part")
+        smokestack.Size = Vector3.new(2, 15, 2)
+        smokestack.Position = factory.Position + Vector3.new(i * 10, 15, 0)
+        smokestack.Parent = building
+        
+        -- Add smoke effect
+        local smoke = Instance.new("ParticleEmitter")
+        smoke.Rate = 15
+        smoke.Lifetime = NumberRange.new(3, 5)
+        smoke.Color = ColorSequence.new(Color3.fromRGB(100, 100, 100))
+        smoke.Parent = smokestack
+    end
+    
+    -- Add conveyor belt
+    local conveyor = Instance.new("Part")
+    conveyor.Size = Vector3.new(20, 1, 2)
+    conveyor.Position = factory.Position + Vector3.new(0, 5, 0)
+    conveyor.BrickColor = BrickColor.new("Bright yellow")
+    conveyor.Parent = building
+end
+
+function BuildingSystem:createPowerPlant(building)
+    -- Create main structure
+    local plant = Instance.new("Part")
+    plant.Size = Vector3.new(25, 20, 25)
+    plant.Position = building:GetPrimaryPartCFrame().Position + Vector3.new(0, 10, 0)
+    plant.Parent = building
+    
+    -- Add cooling towers
+    for i = -1, 1, 2 do
+        local tower = Instance.new("Part")
+        tower.Size = Vector3.new(8, 30, 8)
+        tower.Position = plant.Position + Vector3.new(i * 10, 35, 0)
+        tower.Parent = building
+        
+        -- Add steam effect
+        local steam = Instance.new("ParticleEmitter")
+        steam.Rate = 20
+        steam.Lifetime = NumberRange.new(4, 6)
+        steam.Color = ColorSequence.new(Color3.fromRGB(255, 255, 255))
+        steam.Parent = tower
+    end
+    
+    -- Add energy core
+    local core = Instance.new("Part")
+    core.Size = Vector3.new(10, 10, 10)
+    core.Position = plant.Position + Vector3.new(0, 15, 0)
+    core.BrickColor = BrickColor.new("Neon green")
+    core.Parent = building
+end
+
+function BuildingSystem:createHospital(building)
+    -- Create main structure
+    local hospital = Instance.new("Part")
+    hospital.Size = Vector3.new(20, 20, 20)
+    hospital.Position = building:GetPrimaryPartCFrame().Position + Vector3.new(0, 10, 0)
+    hospital.Parent = building
+    
+    -- Add cross sign
+    local cross = Instance.new("Part")
+    cross.Size = Vector3.new(5, 1, 5)
+    cross.Position = hospital.Position + Vector3.new(0, 15, 0)
+    cross.BrickColor = BrickColor.new("Bright red")
+    cross.Parent = building
+    
+    -- Add medical supplies
+    for i = -1, 1, 2 do
+        local supply = Instance.new("Part")
+        supply.Size = Vector3.new(3, 1, 3)
+        supply.Position = hospital.Position + Vector3.new(i * 5, 5, 0)
+        supply.BrickColor = BrickColor.new("Bright blue")
+        supply.Parent = building
+    end
+end
+
+function BuildingSystem:createMilitaryBase(building)
+    -- Create main structure
+    local base = Instance.new("Part")
+    base.Size = Vector3.new(30, 15, 30)
+    base.Position = building:GetPrimaryPartCFrame().Position + Vector3.new(0, 7.5, 0)
+    base.Parent = building
+    
+    -- Add turrets
+    for i = -1, 1, 2 do
+        for j = -1, 1, 2 do
+            local turret = Instance.new("Part")
+            turret.Size = Vector3.new(2, 2, 2)
+            turret.Position = base.Position + Vector3.new(i * 10, 15, j * 10)
+            turret.BrickColor = BrickColor.new("Dark stone grey")
+            turret.Parent = building
+        end
+    end
+    
+    -- Add radar dish
+    local radar = Instance.new("Part")
+    radar.Size = Vector3.new(10, 1, 10)
+    radar.Position = base.Position + Vector3.new(0, 20, 0)
+    radar.BrickColor = BrickColor.new("Bright blue")
+    radar.Parent = building
+end
+
+function BuildingSystem:addSmokeEffect(building)
+    local smoke = Instance.new("ParticleEmitter")
+    smoke.Rate = 15
+    smoke.Lifetime = NumberRange.new(3, 5)
+    smoke.Color = ColorSequence.new(Color3.fromRGB(100, 100, 100))
+    smoke.Parent = building
+end
+
+function BuildingSystem:addFireEffect(building)
+    local fire = Instance.new("ParticleEmitter")
+    fire.Rate = 20
+    fire.Lifetime = NumberRange.new(2, 4)
+    fire.Color = ColorSequence.new(Color3.fromRGB(255, 69, 0), Color3.fromRGB(255, 165, 0))
+    fire.Parent = building
+end
+
+function BuildingSystem:addLightEffect(building)
+    local light = Instance.new("PointLight")
+    light.Range = 20
+    light.Brightness = 2
+    light.Color = Color3.fromRGB(255, 255, 255)
+    light.Parent = building
+end
+
+function BuildingSystem:addEnergyEffect(building)
+    local energy = Instance.new("ParticleEmitter")
+    energy.Rate = 10
+    energy.Lifetime = NumberRange.new(2, 4)
+    energy.Color = ColorSequence.new(Color3.fromRGB(0, 255, 255))
+    energy.Parent = building
+end
+
+function BuildingSystem:addMedicalEffect(building)
+    local heal = Instance.new("ParticleEmitter")
+    heal.Rate = 15
+    heal.Lifetime = NumberRange.new(2, 4)
+    heal.Color = ColorSequence.new(Color3.fromRGB(0, 255, 0))
+    heal.Parent = building
+end
+
+return BuildingSystem
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="Script" referent="26">
+        <Properties>
+          <string name="Name">CharacterSystem</string>
+          <token name="RunContext">0</token>
+          <string name="Source"><![CDATA[--!strict
+
+--[[
+    @class CharacterSystem
+    @server
+
+    Handles setting up player characters based on their assigned class,
+    including attributes like health and abilities.
+]]
+local CharacterSystem = {}
+
+local Players = game:GetService("Players")
+
+-- Define base attributes for each class
+-- This can be expanded with speed, damage multipliers, etc.
+local CLASS_ATTRIBUTES = {
+    Kaiju = {
+        MaxHealth = 500
+    },
+    Guardian = {
+        MaxHealth = 200
+    },
+    Engineer = {
+        MaxHealth = 150
+    }
+}
+
+--[[
+    Sets up a character when it is added to the game.
+    @param character Model The character model that was added.
+]]
+function CharacterSystem.onCharacterAdded(character: Model)
+    local player = Players:GetPlayerFromCharacter(character)
+    if not player then return end
+
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if not humanoid then return end
+
+    local playerClassValue = player:FindFirstChild("PlayerClass")
+    if not playerClassValue or not playerClassValue:IsA("StringValue") then return end
+
+    local attributes = CLASS_ATTRIBUTES[playerClassValue.Value]
+    if not attributes then return end
+
+    -- Set health based on class
+    humanoid.MaxHealth = attributes.MaxHealth
+    humanoid.Health = attributes.MaxHealth
+
+    print(player.Name .. "'s character created. Class: " .. playerClassValue.Value .. ", MaxHealth: " .. tostring(humanoid.MaxHealth))
+end
+
+--[[
+    Connects the CharacterAdded event for a given player.
+    @param player Player The player to connect the event for.
+]]
+function CharacterSystem.onPlayerAdded(player: Player)
+    player.CharacterAdded:Connect(CharacterSystem.onCharacterAdded)
+    -- If character already exists, set it up
+    if player.Character then
+        CharacterSystem.onCharacterAdded(player.Character)
+    end
+end
+
+--[[
+    Initializes the CharacterSystem.
+]]
+function CharacterSystem.init()
+    -- Connect to all current and future players
+    Players.PlayerAdded:Connect(CharacterSystem.onPlayerAdded)
+    for _, player in ipairs(Players:GetPlayers()) do
+        CharacterSystem.onPlayerAdded(player)
+    end
+end
+
+return CharacterSystem
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="Script" referent="27">
+        <Properties>
+          <string name="Name">ClassSystem</string>
+          <token name="RunContext">0</token>
+          <string name="Source"><![CDATA[--!strict
+
+--[[
+    @class ClassSystem
+    @server
+
+    Handles assigning classes (Kaiju, Guardian, Engineer) to players
+    and managing class-specific abilities and attributes.
+]]
+local ClassSystem = {}
+
+local Players = game:GetService("Players")
+
+-- For now, we'll define the classes in a simple table.
+-- This could be expanded into separate modules later.
+local CLASSES = {
+    "Kaiju",
+    "Guardian",
+    "Engineer"
+}
+
+--[[
+    Assigns a random class to a player when they join.
+    @param player Player The player who joined the game.
+]]
+function ClassSystem.onPlayerAdded(player: Player)
+    -- Create a value to store the player's class
+    local playerClass = Instance.new("StringValue")
+    playerClass.Name = "PlayerClass"
+    
+    -- Assign a random class for now
+    local randomIndex = math.random(1, #CLASSES)
+    playerClass.Value = CLASSES[randomIndex]
+    playerClass.Parent = player
+
+    print(player.Name .. " has been assigned the class: " .. playerClass.Value)
+
+    -- TODO: Connect to character added to give tools/abilities
+end
+
+--[[
+    Initializes the ClassSystem.
+]]
+function ClassSystem.init()
+    -- Connect to player joining event
+    Players.PlayerAdded:Connect(ClassSystem.onPlayerAdded)
+
+    -- Handle players who are already in the game
+    for _, player in ipairs(Players:GetPlayers()) do
+        ClassSystem.onPlayerAdded(player)
+    end
+end
+
+return ClassSystem
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="Script" referent="28">
+        <Properties>
+          <string name="Name">KaijuSystem</string>
+          <token name="RunContext">0</token>
+          <string name="Source"><![CDATA[--!strict
+-- KaijuSystem.lua
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local MainModule = require(ReplicatedStorage:WaitForChild("MainModule"))
+
+local KaijuSystem = {}
+
+function KaijuSystem:spawnKaiju(player)
+    local character = player.Character or player.CharacterAdded:Wait()
+    
+    -- Create kaiju model
+    local kaiju = Instance.new("Model")
+    kaiju.Name = "Kaiju"
+    
+    -- Add basic parts
+    local torso = Instance.new("Part")
+    torso.Size = Vector3.new(10, 5, 10)
+    torso.Position = Vector3.new(0, 10, 0)
+    torso.Anchored = false
+    torso.Parent = kaiju
+    
+    -- Add humanoid
+    local humanoid = Instance.new("Humanoid")
+    humanoid.Health = 500
+    humanoid.MaxHealth = 500
+    humanoid.Parent = kaiju
+    
+    -- Add to character
+    kaiju.Parent = character
+    
+    return kaiju
+end
+
+function KaijuSystem:setupAbilities(kaiju)
+    -- Energy beam ability
+    local energyBeam = Instance.new("RemoteEvent")
+    energyBeam.Name = "EnergyBeam"
+    energyBeam.Parent = kaiju
+    
+    -- Roar ability
+    local roar = Instance.new("Sound")
+    roar.Name = "Roar"
+    roar.SoundId = "rbxassetid://123456789" -- Replace with actual sound ID
+    roar.Parent = kaiju
+    
+    return {
+        energyBeam = energyBeam,
+        roar = roar
+    }
+end
+
+return KaijuSystem
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="Script" referent="29">
+        <Properties>
+          <string name="Name">ScoringSystem</string>
+          <token name="RunContext">0</token>
+          <string name="Source"><![CDATA[--!strict
+-- ScoringSystem.lua
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local MainModule = require(ReplicatedStorage:WaitForChild("MainModule"))
+
+local ScoringSystem = {}
+
+function ScoringSystem:Init()
+    self.scores = {}
+    self.objectives = {
+        KILL = 10,
+        BUILDING_DESTROY = 20,
+        SUPPORT = 5,
+        SURVIVAL = 1
+    }
+end
+
+function ScoringSystem:UpdateScore(player, action, amount)
+    if not self.scores[player.UserId] then
+        self.scores[player.UserId] = {
+            total = 0,
+            kills = 0,
+            buildings = 0,
+            support = 0,
+            survival = 0
+        }
+    end
+    
+    local score = self.scores[player.UserId]
+    
+    if action == "KILL" then
+        score.kills = score.kills + 1
+        score.total = score.total + self.objectives.KILL * amount
+    elseif action == "BUILDING" then
+        score.buildings = score.buildings + 1
+        score.total = score.total + self.objectives.BUILDING_DESTROY * amount
+    elseif action == "SUPPORT" then
+        score.support = score.support + 1
+        score.total = score.total + self.objectives.SUPPORT * amount
+    elseif action == "SURVIVAL" then
+        score.survival = score.survival + 1
+        score.total = score.total + self.objectives.SURVIVAL * amount
+    end
+end
+
+function ScoringSystem:GetLeaderboard()
+    local leaderboard = {}
+    for userId, stats in pairs(self.scores) do
+        table.insert(leaderboard, {
+            userId = userId,
+            totalScore = stats.total,
+            kills = stats.kills,
+            buildings = stats.buildings,
+            support = stats.support,
+            survival = stats.survival
+        })
+    end
+    
+    -- Sort by total score
+    table.sort(leaderboard, function(a, b)
+        return a.totalScore > b.totalScore
+    end)
+    
+    return leaderboard
+end
+
+return ScoringSystem
+]]></string>
+        </Properties>
+      </Item>
+    </Item>
+  </Item>
+  <Item class="ServerStorage" referent="30">
+    <Properties>
+      <string name="Name">ServerStorage</string>
+    </Properties>
+    <Item class="Folder" referent="31">
+      <Properties>
+        <string name="Name">Tests</string>
+      </Properties>
+      <Item class="ModuleScript" referent="32">
+        <Properties>
+          <string name="Name">CharacterSystem.spec</string>
+          <string name="Source"><![CDATA[--!strict
+
+return function()
+    local ServerScriptService = game:GetService("ServerScriptService")
+
+    -- Wait for the modules to be available
+    local ClassSystem = require(ServerScriptService.systems.ClassSystem)
+    local CharacterSystem = require(ServerScriptService.systems.CharacterSystem)
+
+    describe("CharacterSystem", function()
+        it("should set the correct health for a character based on their class", function()
+            -- Setup
+            local mockPlayer = Instance.new("Folder")
+            mockPlayer.Name = "TestPlayer"
+
+            ClassSystem.onPlayerAdded(mockPlayer)
+            local playerClassValue = mockPlayer:FindFirstChild("PlayerClass")
+            assert(playerClassValue, "Class was not assigned!")
+
+            local mockCharacter = Instance.new("Model")
+            local humanoid = Instance.new("Humanoid")
+            humanoid.Parent = mockCharacter
+
+            -- Associate character and player for the system to find
+            mockCharacter.Parent = game.Workspace
+            mockPlayer.Character = mockCharacter
+
+            -- Run
+            CharacterSystem.onCharacterAdded(mockCharacter)
+
+            -- Verify
+            local CLASS_ATTRIBUTES = {
+                Kaiju = { MaxHealth = 500 },
+                Guardian = { MaxHealth = 200 },
+                Engineer = { MaxHealth = 150 }
+            }
+            local expectedHealth = CLASS_ATTRIBUTES[playerClassValue.Value].MaxHealth
+            expect(humanoid.MaxHealth).to.equal(expectedHealth)
+            expect(humanoid.Health).to.equal(expectedHealth)
+        end)
+    end)
+end
+]]></string>
+        </Properties>
+      </Item>
+      <Item class="ModuleScript" referent="33">
+        <Properties>
+          <string name="Name">ClassSystem.spec</string>
+          <string name="Source"><![CDATA[--!strict
+
+-- Import TestEZ globals
+local TestEZ = {}
+
+-- Get the TestEZ module from ServerScriptService
+local function getTestEZ()
+    local success, result = pcall(function()
+        return game:GetService("ServerScriptService").TestEZ
+    end)
+    
+    if not success then
+        warn("Could not find TestEZ in ServerScriptService")
+        return nil
+    end
+    
+    return result
+end
+
+-- Get the ClassSystem module
+local function getClassSystem()
+    local success, result = pcall(function()
+        return require(game:GetService("ServerScriptService").systems.ClassSystem)
+    end)
+    
+    if not success then
+        warn("Could not require ClassSystem:", result)
+        return nil
+    end
+    
+    return result
+end
+
+-- Main test function
+return function()
+    local Players = game:GetService("Players")
+    local TestEZ = getTestEZ()
+    local ClassSystem = getClassSystem()
+    
+    if not TestEZ or not ClassSystem then
+        warn("Skipping tests due to missing dependencies")
+        return
+    end
+    
+    -- Import TestEZ functions
+    local describe = TestEZ.TestBootstrap.describe
+    local it = TestEZ.TestBootstrap.it
+    local expect = TestEZ.Expectation.new
+    
+    describe("ClassSystem", function()
+        describe("onPlayerAdded", function()
+            it("should assign a valid class to a player", function()
+                -- Setup
+                local mockPlayer = Instance.new("Folder")
+                mockPlayer.Name = "TestPlayer"
+
+                -- Run
+                ClassSystem.onPlayerAdded(mockPlayer)
+
+                -- Verify
+                local playerClassValue = mockPlayer:FindFirstChild("PlayerClass")
+                expect(playerClassValue).to.be.ok()
+                expect(playerClassValue:IsA("StringValue")).to.equal(true)
+
+                local CLASSES = {"Kaiju", "Guardian", "Engineer"}
+                local classIsValid = table.find(CLASSES, playerClassValue.Value) ~= nil
+                expect(classIsValid).to.equal(true)
+            end)
+
+            it("should not overwrite existing PlayerClass value", function()
+                -- Setup
+                local mockPlayer = Instance.new("Folder")
+                mockPlayer.Name = "TestPlayer"
+                local existingClass = Instance.new("StringValue")
+                existingClass.Name = "PlayerClass"
+                existingClass.Value = "Kaiju"
+                existingClass.Parent = mockPlayer
+
+                -- Run
+                ClassSystem.onPlayerAdded(mockPlayer)
+
+                -- Verify
+                local playerClassValue = mockPlayer:FindFirstChild("PlayerClass")
+                expect(playerClassValue).to.be.ok()
+                expect(playerClassValue.Value).to.equal("Kaiju")
+            end)
+        end)
+    end)
+end
+]]></string>
+        </Properties>
+      </Item>
+    </Item>
+  </Item>
+  <Item class="StarterPlayer" referent="34">
+    <Properties>
+      <string name="Name">StarterPlayer</string>
+    </Properties>
+    <Item class="LocalScript" referent="35">
+      <Properties>
+        <string name="Name">StarterPlayerScripts</string>
+        <string name="Source">--!strict
+print("Hello world, from client!")</string>
+      </Properties>
+      <Item class="Folder" referent="36">
+        <Properties>
+          <string name="Name">controllers</string>
+        </Properties>
+        <Item class="LocalScript" referent="37">
+          <Properties>
+            <string name="Name">PlayerController</string>
+            <string name="Source"><![CDATA[--!strict
+-- PlayerController.lua
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local MainModule = require(ReplicatedStorage:WaitForChild("MainModule"))
+
+local PlayerController = {}
+
+function PlayerController:Init(player)
+    -- Set up player character
+    local character = player.Character or player.CharacterAdded:Wait()
+    
+    -- Set up player stats
+    self.health = 100
+    self.maxHealth = 100
+    self.class = "Kaiju"
+    self.level = 1
+    
+    -- Set up player input
+    self:setupControls()
+end
+
+function PlayerController:setupControls()
+    local player = Players.LocalPlayer
+    
+    -- Movement controls
+    player.Character.Humanoid.WalkSpeed = 16
+    player.Character.Humanoid.JumpPower = 50
+    
+    -- Attack binding
+    game:GetService("UserInputService").InputBegan:Connect(function(input)
+        if input.KeyCode == Enum.KeyCode.E then
+            self:attack()
+        end
+    end)
+end
+
+function PlayerController:attack()
+    -- Basic attack logic
+    local character = Players.LocalPlayer.Character
+    local humanoid = character:FindFirstChild("Humanoid")
+    
+    if humanoid and humanoid.Health > 0 then
+        -- Create attack animation
+        local animation = Instance.new("Animation")
+        animation.AnimationId = "rbxassetid://123456789" -- Replace with actual animation ID
+        
+        local animator = character:FindFirstChild("Humanoid"):LoadAnimation(animation)
+        animator:Play()
+    end
+end
+
+return PlayerController
+]]></string>
+          </Properties>
+        </Item>
+      </Item>
+    </Item>
+  </Item>
+  <Item class="Workspace" referent="38">
+    <Properties>
+      <string name="Name">Workspace</string>
+      <bool name="FilteringEnabled">true</bool>
+    </Properties>
+    <Item class="Part" referent="39">
+      <Properties>
+        <string name="Name">Baseplate</string>
+        <bool name="Anchored">true</bool>
+        <Color3uint8 name="Color3uint8">6512483</Color3uint8>
+        <bool name="Locked">true</bool>
+        <Vector3 name="Position">
+          <X>0</X>
+          <Y>-10</Y>
+          <Z>0</Z>
+        </Vector3>
+        <Vector3 name="size">
+          <X>512</X>
+          <Y>20</Y>
+          <Z>512</Z>
+        </Vector3>
+      </Properties>
+    </Item>
+  </Item>
+</roblox>
