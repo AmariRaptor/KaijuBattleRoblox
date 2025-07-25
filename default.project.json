@@ -39,6 +39,15 @@
       "SimpleTest": {
         "$path": "src/SimpleTest.lua"
       },
+      "MinimalTest": {
+        "$path": "src/MinimalTest.lua"
+      },
+      "BasicTest": {
+        "$path": "src/BasicTest.lua"
+      },
+      "ClassSystemMinimalTest": {
+        "$path": "src/ClassSystemMinimalTest.lua"
+      },
       "Main": {
         "$path": "src/server_code/Main.server.luau"
       },
