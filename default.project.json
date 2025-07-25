@@ -6,11 +6,91 @@
       "$path": "src/shared"
     },
     "ServerScriptService": {
-      "$path": "src/server"
+      "Main": {
+        "$path": "src/server_code/Main.server.luau"
+      },
+      "RunTests": {
+        "$path": "src/RunTests.server.lua"
+      },
+      "TestEZ": {
+        "$className": "Folder",
+        "TestBootstrap": {
+          "$path": "src/TestEZ/TestBootstrap.lua"
+        },
+        "TestEnum": {
+          "$path": "src/TestEZ/TestEnum.lua"
+        },
+        "TestPlan": {
+          "$path": "src/TestEZ/TestPlan.lua"
+        },
+        "TestPlanner": {
+          "$path": "src/TestEZ/TestPlanner.lua"
+        },
+        "TestResults": {
+          "$path": "src/TestEZ/TestResults.lua"
+        },
+        "TestRunner": {
+          "$path": "src/TestEZ/TestRunner.lua"
+        },
+        "TestSession": {
+          "$path": "src/TestEZ/TestSession.lua"
+        },
+        "Context": {
+          "$path": "src/TestEZ/Context.lua"
+        },
+        "Expectation": {
+          "$path": "src/TestEZ/Expectation.lua"
+        },
+        "ExpectationContext": {
+          "$path": "src/TestEZ/ExpectationContext.lua"
+        },
+        "LifecycleHooks": {
+          "$path": "src/TestEZ/LifecycleHooks.lua"
+        },
+        "Reporters": {
+          "$className": "Folder",
+          "TeamCityReporter": {
+            "$path": "src/TestEZ/Reporters/TeamCityReporter.lua"
+          },
+          "TextReporter": {
+            "$path": "src/TestEZ/Reporters/TextReporter.lua"
+          },
+          "TextReporterQuiet": {
+            "$path": "src/TestEZ/Reporters/TextReporterQuiet.lua"
+          }
+        }
+      },
+      "systems": {
+        "$className": "Folder",
+        "BuildingSystem": {
+          "$path": "src/server_code/systems/BuildingSystem.server.luau"
+        },
+        "CharacterSystem": {
+          "$path": "src/server_code/systems/CharacterSystem.server.luau"
+        },
+        "ClassSystem": {
+          "$path": "src/server_code/systems/ClassSystem.server.luau"
+        },
+        "KaijuSystem": {
+          "$path": "src/server_code/systems/KaijuSystem.server.luau"
+        },
+        "ScoringSystem": {
+          "$path": "src/server_code/systems/ScoringSystem.server.luau"
+        }
+      }
     },
     "StarterPlayer": {
       "StarterPlayerScripts": {
         "$path": "src/client"
+      }
+    },
+    "ServerStorage": {
+      "$className": "ServerStorage",
+      "Tests": {
+        "$path": "src/tests"
+      },
+      "RunTests": {
+        "$path": "src/RunTests.lua"
       }
     },
     "Workspace": {
