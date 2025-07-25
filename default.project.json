@@ -21,6 +21,9 @@
       "TestScript": {
         "$path": "src/TestScript.server.luau"
       },
+      "TestKaijuSystem": {
+        "$path": "src/TestKaijuSystem.luau"
+      },
       "Main": {
         "$path": "src/server_code/Main.server.luau"
       },
