@@ -3,7 +3,10 @@
   "tree": {
     "$className": "DataModel",
     "ReplicatedStorage": {
-      "$path": "src/shared"
+      "$path": "src/shared",
+      "TestUtils": {
+        "$path": "src/TestUtils.lua"
+      }
     },
     "ServerStorage": {
       "$className": "ServerStorage",
