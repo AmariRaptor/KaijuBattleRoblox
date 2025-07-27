@@ -5,7 +5,13 @@
     "ReplicatedStorage": {
       "$path": "src/shared",
       "TestUtils": {
-        "$path": "src/TestUtils.lua"
+        "$path": "src/TestUtils.luau"
+      },
+      "PowerSystem": {
+        "$path": "src/shared/PowerSystem.luau"
+      },
+      "RunCharacterSystemTests": {
+        "$path": "src/RunCharacterSystemTests.luau"
       }
     },
     "ServerStorage": {
@@ -27,44 +33,68 @@
       }
     },
     "ServerScriptService": {
-      "TestScript": {
-        "$path": "src/TestScript.server.luau"
+      "PowerController": {
+        "$path": "src/server/PowerController.server.luau"
       },
-      "TestKaijuSystem": {
-        "$path": "src/TestKaijuSystem.luau"
-      },
-      "TestClassSystem": {
-        "$path": "src/TestClassSystem.luau"
-      },
-      "DirectTest": {
-        "$path": "src/DirectTest.lua"
-      },
-      "SimpleTest": {
-        "$path": "src/SimpleTest.lua"
-      },
-      "MinimalTest": {
-        "$path": "src/MinimalTest.lua"
-      },
-      "BasicTest": {
-        "$path": "src/BasicTest.lua"
-      },
-      "ClassSystemMinimalTest": {
-        "$path": "src/ClassSystemMinimalTest.lua"
-      },
-      "SimpleReturnTest": {
-        "$path": "src/SimpleReturnTest.lua"
-      },
-      "ClassSystemDirectTest": {
-        "$path": "src/ClassSystemDirectTest.lua"
-      },
-      "KaijuSystemDirectTest": {
-        "$path": "src/KaijuSystemDirectTest.lua"
-      },
-      "BuildingSystemDirectTest": {
-        "$path": "src/BuildingSystemDirectTest.lua"
-      },
-      "TestRunner": {
-        "$path": "src/TestRunner.lua"
+      "Tests": {
+        "$className": "Folder",
+        "CharacterSystemTest": {
+          "$path": "src/CharacterSystemTest.lua"
+        },
+        "CharacterSystemDirectTest": {
+          "$path": "src/CharacterSystemDirectTest.lua"
+        },
+        "TestCharacterSystem": {
+          "$path": "src/TestCharacterSystem.lua"
+        },
+        "TestCharacterSystem2": {
+          "$path": "src/TestCharacterSystem2.lua"
+        },
+        "TestCharacterSystem3": {
+          "$path": "src/TestCharacterSystem3.luau"
+        },
+        "TestKaijuSystem": {
+          "$path": "src/TestKaijuSystem.luau"
+        },
+        "TestClassSystem": {
+          "$path": "src/TestClassSystem.luau"
+        },
+        "DirectTest": {
+          "$path": "src/DirectTest.lua"
+        },
+        "SimpleTest": {
+          "$path": "src/SimpleTest.lua"
+        },
+        "MinimalTest": {
+          "$path": "src/MinimalTest.lua"
+        },
+        "BasicTest": {
+          "$path": "src/BasicTest.lua"
+        },
+        "ClassSystemMinimalTest": {
+          "$path": "src/ClassSystemMinimalTest.lua"
+        },
+        "SimpleReturnTest": {
+          "$path": "src/SimpleReturnTest.lua"
+        },
+        "ClassSystemDirectTest": {
+          "$path": "src/ClassSystemDirectTest.lua"
+        },
+        "KaijuSystemDirectTest": {
+          "$path": "src/KaijuSystemDirectTest.lua"
+        },
+        "BuildingSystemDirectTest": {
+          "$path": "src/BuildingSystemDirectTest.lua"
+        },
+        "TestRunner": {
+          "$path": "src/TestRunner.lua"
+        },
+        "TestScript": {
+          "$path": "src/TestScript.server.luau"
+        },
+        "MinimalCharacterTest": {
+          "$path": "src/MinimalCharacterTest.lua"
+        }
       },
       "Main": {
         "$path": "src/server_code/Main.server.luau"
@@ -138,6 +168,9 @@
     },
     "StarterPlayer": {
       "StarterPlayerScripts": {
+      "PowerInput": {
+        "$path": "src/client/PowerInput.client.luau"
+      },
         "$path": "src/client"
       }
     },

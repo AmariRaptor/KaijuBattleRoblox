@@ -8,7 +8,8 @@ local TEST_MODULES = {
     "SimpleReturnTest",
     "ClassSystemDirectTest",
     "KaijuSystemDirectTest",
-    "BuildingSystemDirectTest"
+    "BuildingSystemDirectTest",
+    "CharacterSystemDirectTest"
 }
 
 -- Track test results
