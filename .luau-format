@@ -1,0 +1,87 @@
+-- Luau formatter configuration
+-- See: https://luau-lang.org/configuration
+
+version = "1.0.0"
+
+indent = {
+    width = 4,
+    type = "space"
+}
+
+line_width = 120
+
+new_line = {
+    after_if_condition = true,
+    after_do = true,
+    after_while_condition = true,
+    after_for_loop = true,
+    after_function_definition = true,
+    after_function_definition_lambda = true,
+    after_local_declaration = "when_multiline",
+    after_assignment = "when_multiline",
+    after_operator = "when_multiline",
+    after_comma = "when_multiline",
+    after_else = true,
+    after_elseif = true,
+    after_end = true,
+    before_else = true,
+    before_elseif = true,
+    before_end = true,
+    before_comments = "always"
+}
+
+spaces = {
+    before_comma = false,
+    after_comma = " ",
+    before_semicolon = false,
+    after_semicolon = " ",
+    before_colon = false,
+    after_colon = " ",
+    before_and = " ",
+    after_and = " ",
+    before_or = " ",
+    after_or = " ",
+    before_operator = " ",
+    after_operator = " ",
+    before_function_call_parentheses = false,
+    before_function_definition_parentheses = false,
+    before_curly_braces = " ",
+    after_curly_braces = true,
+    before_square_brackets = "",
+    after_square_brackets = "",
+    before_parentheses = "",
+    after_parentheses = " "
+}
+
+line_breaks = {
+    max_empty_lines = 2,
+    after_do = 1,
+    after_while = 1,
+    after_repeat = 1,
+    after_for = 1,
+    after_if = 1,
+    after_else = 1,
+    after_elseif = 1,
+    after_function = 1,
+    after_local = 1,
+    after_return = 1,
+    after_break = 1,
+    after_continue = 1,
+    after_goto = 1,
+    after_label = 1,
+    after_end = 1,
+    before_else = 1,
+    before_elseif = 1,
+    before_until = 1,
+    before_end = 1,
+    around_block = 1
+}
+
+format = {
+    enable = true,
+    comments = true,
+    roblox = true,
+    ignore = {
+        "*.spec.luau"  -- Don't auto-format test files
+    }
+}

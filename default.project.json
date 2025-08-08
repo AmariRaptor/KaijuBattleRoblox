@@ -7,48 +7,55 @@
       "TestUtils": {
         "$path": "src/TestUtils.luau"
       },
+      "TestEZ": {
+        "$path": "src/TestEZ"
+      },
       "PowerSystem": {
         "$path": "src/shared/PowerSystem.luau"
       },
+      "Utility": {
+        "$path": "src/shared/Utility.luau"
+      },
+      "MainModule": {
+        "$path": "src/shared/MainModule.luau"
+      },
       "RunCharacterSystemTests": {
         "$path": "src/RunCharacterSystemTests.luau"
+      },
+      "RunBuildingSystemTests": {
+        "$path": "src/RunBuildingSystemTests.luau"
+      },
+      "BuildingSystem": {
+        "$path": "src/server_code/systems/BuildingSystem.fixed.luau"
       }
     },
     "ServerStorage": {
       "$className": "ServerStorage",
       "Tests": {
         "$className": "Folder",
-        "ServerStorageTests": {
-          "$path": "src/ServerStorage/Tests"
-        },
-        "TestsFolder": {
-          "$path": "src/tests"
-        }
-      },
-      "KaijuSystemTest": {
-        "$path": "src/ServerStorage/Tests/KaijuSystemTest.luau"
-      },
-      "RunTests": {
-        "$path": "src/ServerStorage/RunTests.server.luau"
+        "$path": "src/ServerStorage/Tests"
       }
     },
     "ServerScriptService": {
+      "RunCoverageDemo": {
+        "$path": "src/server/RunCoverageDemo.server.luau"
+      },
       "PowerController": {
         "$path": "src/server/PowerController.server.luau"
       },
       "Tests": {
         "$className": "Folder",
         "CharacterSystemTest": {
-          "$path": "src/CharacterSystemTest.lua"
+          "$path": "src/CharacterSystemTest.luau"
         },
         "CharacterSystemDirectTest": {
-          "$path": "src/CharacterSystemDirectTest.lua"
+          "$path": "src/CharacterSystemDirectTest.luau"
         },
         "TestCharacterSystem": {
-          "$path": "src/TestCharacterSystem.lua"
+          "$path": "src/TestCharacterSystem.luau"
         },
         "TestCharacterSystem2": {
-          "$path": "src/TestCharacterSystem2.lua"
+          "$path": "src/TestCharacterSystem2.luau"
         },
         "TestCharacterSystem3": {
           "$path": "src/TestCharacterSystem3.luau"
@@ -60,117 +67,56 @@
           "$path": "src/TestClassSystem.luau"
         },
         "DirectTest": {
-          "$path": "src/DirectTest.lua"
+          "$path": "src/DirectTest.luau"
         },
         "SimpleTest": {
-          "$path": "src/SimpleTest.lua"
+          "$path": "src/SimpleTest.luau"
         },
         "MinimalTest": {
-          "$path": "src/MinimalTest.lua"
+          "$path": "src/MinimalTest.luau"
         },
         "BasicTest": {
-          "$path": "src/BasicTest.lua"
+          "$path": "src/BasicTest.luau"
         },
         "ClassSystemMinimalTest": {
-          "$path": "src/ClassSystemMinimalTest.lua"
+          "$path": "src/ClassSystemMinimalTest.luau"
         },
         "SimpleReturnTest": {
-          "$path": "src/SimpleReturnTest.lua"
+          "$path": "src/SimpleReturnTest.luau"
         },
         "ClassSystemDirectTest": {
-          "$path": "src/ClassSystemDirectTest.lua"
+          "$path": "src/ClassSystemDirectTest.luau"
         },
         "KaijuSystemDirectTest": {
-          "$path": "src/KaijuSystemDirectTest.lua"
+          "$path": "src/KaijuSystemDirectTest.luau"
         },
         "BuildingSystemDirectTest": {
-          "$path": "src/BuildingSystemDirectTest.lua"
+          "$path": "src/BuildingSystemDirectTest.luau"
         },
-        "TestRunner": {
-          "$path": "src/TestRunner.lua"
-        },
+
         "TestScript": {
           "$path": "src/TestScript.server.luau"
         },
         "MinimalCharacterTest": {
-          "$path": "src/MinimalCharacterTest.lua"
+          "$path": "src/MinimalCharacterTest.luau"
+        },
+        "TestBuildingSystem": {
+          "$path": "src/server_code/tests/TestBuildingSystem.luau"
         }
       },
       "Main": {
         "$path": "src/server_code/Main.server.luau"
       },
-      "TestEZ": {
-        "$className": "Folder",
-        "TestBootstrap": {
-          "$path": "src/TestEZ/TestBootstrap.luau"
-        },
-        "TestEnum": {
-          "$path": "src/TestEZ/TestEnum.luau"
-        },
-        "TestPlan": {
-          "$path": "src/TestEZ/TestPlan.luau"
-        },
-        "TestPlanner": {
-          "$path": "src/TestEZ/TestPlanner.luau"
-        },
-        "TestResults": {
-          "$path": "src/TestEZ/TestResults.luau"
-        },
-        "TestRunner": {
-          "$path": "src/TestEZ/TestRunner.luau"
-        },
-        "TestSession": {
-          "$path": "src/TestEZ/TestSession.luau"
-        },
-        "Context": {
-          "$path": "src/TestEZ/Context.luau"
-        },
-        "Expectation": {
-          "$path": "src/TestEZ/Expectation.luau"
-        },
-        "ExpectationContext": {
-          "$path": "src/TestEZ/ExpectationContext.luau"
-        },
-        "LifecycleHooks": {
-          "$path": "src/TestEZ/LifecycleHooks.luau"
-        },
-        "Reporters": {
-          "$className": "Folder",
-          "TeamCityReporter": {
-            "$path": "src/TestEZ/Reporters/TeamCityReporter.luau"
-          },
-          "TextReporter": {
-            "$path": "src/TestEZ/Reporters/TextReporter.luau"
-          },
-          "TextReporterQuiet": {
-            "$path": "src/TestEZ/Reporters/TextReporterQuiet.luau"
-          }
-        }
-      },
       "systems": {
         "$className": "Folder",
-        "BuildingSystem": {
-          "$path": "src/server_code/systems/BuildingSystem.server.luau"
-        },
-        "CharacterSystem": {
-          "$path": "src/server_code/systems/CharacterSystem.server.luau"
-        },
-        "ClassSystem": {
-          "$path": "src/server_code/systems/ClassSystem.server.luau"
-        },
-        "KaijuSystem": {
-          "$path": "src/server_code/systems/KaijuSystem.server.luau"
-        },
-        "ScoringSystem": {
-          "$path": "src/server_code/systems/ScoringSystem.server.luau"
-        }
+        "$path": "src/server_code/Systems"
       }
     },
     "StarterPlayer": {
       "StarterPlayerScripts": {
-      "PowerInput": {
-        "$path": "src/client/PowerInput.client.luau"
-      },
+        "PowerInput": {
+          "$path": "src/client/PowerInput.client.luau"
+        },
         "$path": "src/client"
       }
     },

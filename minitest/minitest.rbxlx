@@ -1,0 +1,17 @@
+<roblox version="4">
+  <Item class="ServerStorage" referent="0">
+    <Properties>
+      <string name="Name">ServerStorage</string>
+    </Properties>
+    <Item class="ModuleScript" referent="1">
+      <Properties>
+        <string name="Name">TestScript</string>
+        <string name="Source"><![CDATA[--!strict
+-- test_script.luau - A simple test script
+
+return "✅ Test script loaded successfully"
+]]></string>
+      </Properties>
+    </Item>
+  </Item>
+</roblox>

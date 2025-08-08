@@ -1,0 +1,12 @@
+{
+  "name": "MiniTest",
+  "tree": {
+    "$className": "DataModel",
+    "ServerStorage": {
+      "$className": "ServerStorage",
+      "TestScript": {
+        "$path": "test_script.luau"
+      }
+    }
+  }
+}
