@@ -1,0 +1,13 @@
+{
+    "globals": [
+        "game",
+        "workspace",
+        "script",
+        "print",
+        "wait",
+        "pcall",
+        "tostring",
+        "type",
+        "require"
+    ]
+}

@@ -18,7 +18,7 @@ A thrilling kaiju-themed battle game where players can choose to be giant monste
 
 - [Roblox Studio](https://www.roblox.com/create)
 - [Rojo](https://rojo.space/docs/v7/getting-started/)
-- [Aftman](https://github.com/LPGhatguy/aftman)
+- [mise-en-place](https://mise.jdx.dev/)
 - Basic knowledge of Roblox Luau scripting
 
 ### Installation
@@ -26,15 +26,15 @@ A thrilling kaiju-themed battle game where players can choose to be giant monste
 1. Clone the repository
 2. Install dependencies:
 
-   ```bash
-   aftman install
-   ```
+    ```bash
+    mise install
+    ```
 
 3. Build the project:
 
-   ```bash
-   rojo build -o KaijuBattleRoblox.rbxlx
-   ```
+    ```bash
+    rojo build -o KaijuBattleRoblox.rbxlx
+    ```
 
 4. Open `KaijuBattleRoblox.rbxlx` in Roblox Studio
 
@@ -57,66 +57,66 @@ Key features:
 All game systems follow a standardized initialization pattern to ensure consistency and maintainability:
 
 1. **Constructor Pattern**:
-   - Each system implements a `new()` constructor that creates a new instance
-   - The constructor calls the `init()` method for initialization
-   - Example:
+    - Each system implements a `new()` constructor that creates a new instance
+    - The constructor calls the `init()` method for initialization
+    - Example:
 
-     ```lua
-     function SystemName.new()
-         local self = setmetatable({}, SystemName)
-         self:init()
-         return self
-     end
-     ```
+        ```lua
+        function SystemName.new()
+            local self = setmetatable({}, SystemName)
+            self:init()
+            return self
+        end
+        ```
 
 2. **Initialization Method**:
-   - Each system has an `init()` method that handles setup logic
-   - The method returns `true` on success or `false`/`nil` on failure
-   - Example:
+    - Each system has an `init()` method that handles setup logic
+    - The method returns `true` on success or `false`/`nil` on failure
+    - Example:
 
-     ```lua
-     function SystemName:init()
-         print("🔄 Initializing SystemName...")
-         -- Initialization logic here
-         print("✅ SystemName initialized successfully")
-         return true
-     end
-     ```
+        ```lua
+        function SystemName:init()
+            print("🔄 Initializing SystemName...")
+            -- Initialization logic here
+            print("✅ SystemName initialized successfully")
+            return true
+        end
+        ```
 
 3. **Module Export**:
-   - Systems are exported as instantiated singletons
-   - The module returns `SystemName.new()`
+    - Systems are exported as instantiated singletons
+    - The module returns `SystemName.new()`
 
 ## Game Systems
 
-### 1. Character System
+### Character System
 
 Handles player characters, classes, and attributes.
 
-**Initialization
+#### Character Initialization
 
 - Creates player character instances
 - Sets up class attributes
 - Manages character abilities
 
-**Key Features
+#### Character Key Features
 
 - Class-based attributes (Health, Speed, etc.)
 - Dynamic class changes
 - Ability management
 - Character state handling
 
-### 2. Kaiju System
+### Kaiju System
 
 Manages Kaiju-specific functionality and abilities.
 
-**Initialization**
+#### Kaiju Initialization
 
 - Sets up Kaiju abilities and events
 - Initializes Kaiju state tracking
 - Configures ability cooldowns
 
-**Key Features**
+#### Kaiju Key Features
 
 - Special abilities (Roar, Energy Beam, etc.)
 - Kaiju state management
@@ -128,134 +128,78 @@ Manages Kaiju-specific functionality and abilities.
 To add a new system to the game, follow these steps:
 
 1. **Review the MainModule Documentation**
-   - See [docs/MainModule.md](docs/MainModule.md) for detailed information
-   - Understand the system lifecycle and requirements
+    - See [docs/MainModule.md](docs/MainModule.md) for detailed information
+    - Understand the system lifecycle and requirements
 
 2. **Create a new ModuleScript** in the `ServerScriptService/systems` folder with the following structure:
 
-   ```lua
-   --!strict
-   -- systems/NewSystem.server.luau
-   
-   local NewSystem = {}
-   NewSystem.__index = NewSystem
-   
-   -- Constructor
-   function NewSystem.new()
-       local self = setmetatable({}, NewSystem)
-       self:init()
-       return self
-   end
-   
-   -- Initialize the system
-   function NewSystem:init()
-       -- Configuration
-       self.isInitialized = false
-       
-       -- Dependencies
-       self.dependencies = {
-           -- List any other systems this system depends on
-       }
-       
-       -- Initialize system components
-       self:setupEvents()
-       self:setupConnections()
-       
-       self.isInitialized = true
-       print("✅ NewSystem initialized successfully")
-       return true
-   end
-   
-   -- Set up RemoteEvents and BindableEvents
-   function NewSystem:setupEvents()
-       -- Create any necessary RemoteEvents or BindableEvents here
-   end
-   
-   -- Set up event connections
-   function NewSystem:setupConnections()
-       -- Set up any event connections here
-   end
-   
-   -- Cleanup method (optional)
-   function NewSystem:cleanup()
-       -- Clean up any resources, connections, etc.
-   end
-   
-   return NewSystem.new()
-   ```
+    ```lua
+    --!strict
+    -- systems/NewSystem.server.luau
 
-2. **Update the Main system** to initialize your new system:
-   - Open `ServerScriptService/Main.server.luau`
-   - Add your system to the `systems` table
-   - The main script will automatically require and initialize it
+    local NewSystem = {}
+    NewSystem.__index = NewSystem
 
-3. **Testing your system**:
-   - Use the built-in test framework by adding tests to the `ServerScriptService/tests` folder
-   - Follow the naming convention: `NewSystem.spec.luau`
-   - Run tests using the TestService or through the test runner
+    -- Constructor
+    function NewSystem.new()
+        local self = setmetatable({}, NewSystem)
+        self:init()
+        return self
+    end
 
-4. **Documentation**:
-   - Add documentation for your system in this README
-   - Include:
-     - System purpose and responsibilities
-     - Public API methods
-     - Configuration options
-     - Dependencies
-     - Example usage
+    -- Initialize the system
+    function NewSystem:init()
+        -- Configuration
+        self.isInitialized = false
 
-5. **Best Practices**:
-   - Follow the single responsibility principle
-   - Use strict typing with `--!strict`
-   - Include error handling
-   - Document public methods
-   - Keep system communication through defined interfaces
-   - Use dependency injection for testability
+        -- Dependencies
+        self.dependencies = {
+            -- List any other systems this system depends on
+        }
 
-   ```lua
-   --!strict
-   -- YourSystemName.server.luau
-   
-   local YourSystemName = {}
-   YourSystemName.__index = YourSystemName
-   
-   -- Constructor
-   function YourSystemName.new()
-       local self = setmetatable({}, YourSystemName)
-       self:init()
-       return self
-   end
-   
-   -- Initialization method
-   function YourSystemName:init(): boolean
-       print("🔄 Initializing YourSystemName...")
-       
-       -- Add your initialization code here
-       self.initialized = true
-       
-       print("✅ YourSystemName initialized successfully")
-       return true
-   end
-   
-   -- Add your system's methods here
-   
-   -- Export as a singleton
-   return YourSystemName.new()
-   ```
+        -- Initialize system components
+        self:setupEvents()
+        self:setupConnections()
 
-2. **Add your system to the Main script** by adding it to the `SYSTEM_NAMES` table:
+        self.isInitialized = true
+        print("✅ NewSystem initialized successfully")
+        return true
+    end
 
-   ```lua
-   local SYSTEM_NAMES = {
-       "ClassSystem",
-       "CharacterSystem",
-       "BuildingSystem",
-       "KaijuSystem",
-       "ScoringSystem",
-       "YourSystemName"  -- Add your system here
-   }
-   ```
+    -- Set up RemoteEvents and BindableEvents
+    function NewSystem:setupEvents()
+        -- Create any necessary RemoteEvents or BindableEvents here
+    end
 
-3. **Test your system** by running the game and checking the output for initialization messages.
+    -- Set up event connections
+    function NewSystem:setupConnections()
+        -- Set up any event connections here
+    end
+
+    -- Cleanup method (optional)
+    function NewSystem:cleanup()
+        -- Clean up any resources, connections, etc.
+    end
+
+    return NewSystem.new()
+    ```
+
+3. **Update the Main system** to initialize your new system:
+    - Open `ServerScriptService/Main.server.luau`
+    - Add your system to the `systems` table
+    - The main script will automatically require and initialize it
+
+4. **Test your system**:
+    - Use the built-in test framework by adding tests to the `ServerScriptService/tests` folder
+    - Follow the naming convention: `NewSystem.spec.luau`
+    - Run tests using the TestService or through the test runner
+
+5. **Document your system**:
+    - Add documentation for your system in this README
+    - Include:
+        - System purpose and responsibilities
+        - Key features and methods
+        - Dependencies
 
 ## Testing
 
@@ -265,9 +209,9 @@ The project includes a comprehensive testing framework to ensure stability and r
 
 1. In Roblox Studio, run the test script:
 
-   ```lua
-   require(game.ServerScriptService.Tests.run_tests)
-   ```
+    ```lua
+    require(game.ServerScriptService.Tests.run_tests)
+    ```
 
 2. View test results in the Output window
 
@@ -300,11 +244,11 @@ Example test structure:
 --!strict
 return function()
     local results = {}
-    
+
     -- Test cases
     table.insert(results, "✅ Test passed")
     table.insert(results, "❌ Test failed")
-    
+
     return results
 end
 ```
@@ -351,25 +295,24 @@ return {
 ### Common Issues
 
 1. **Tests not running**:
-   - Ensure all services are properly mocked
-   - Check for syntax errors in test files
+    - Ensure all services are properly mocked
+    - Check for syntax errors in test files
 
 2. **Missing dependencies**:
-   - Run `aftman install`
-   - Verify Rojo is properly configured
+    - Run `mise install`
+    - Verify Rojo is properly configured
 
 3. **Test failures**:
-   - Check the Output window for detailed error messages
-   - Verify test environment setup
+    - Check the Output window for detailed error messages
+    - Verify test environment setup
 
 ## Contributing
 
 1. Fork the repository
 2. Create a feature branch
 3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+4. Submit a pull request
 
 ## License
 
-[MIT License](LICENSE)
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.

@@ -24,9 +24,6 @@
       },
       "RunBuildingSystemTests": {
         "$path": "src/RunBuildingSystemTests.luau"
-      },
-      "BuildingSystem": {
-        "$path": "src/server_code/systems/BuildingSystem.fixed.luau"
       }
     },
     "ServerStorage": {
@@ -43,6 +40,7 @@
       "PowerController": {
         "$path": "src/server/PowerController.server.luau"
       },
+
       "Tests": {
         "$className": "Folder",
         "CharacterSystemTest": {
@@ -103,6 +101,9 @@
         "TestBuildingSystem": {
           "$path": "src/server_code/tests/TestBuildingSystem.luau"
         }
+      },
+      "MainModule": {
+        "$path": "src/server_code/MainModule.luau"
       },
       "Main": {
         "$path": "src/server_code/Main.server.luau"
