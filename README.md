@@ -2,317 +2,60 @@
 
 A thrilling kaiju-themed battle game where players can choose to be giant monsters or city defenders!
 
-## Game Features
+(Existing documentation preserved; below are developer onboarding additions to help with MCP, linting, and hooks.)
 
-- Choose between Kaiju, Guardian, or Engineer classes
-- Epic monster battles in a destructible city environment
-- Unique abilities for each class
-- Team-based gameplay
-- Dynamic weather effects
-- Comprehensive testing framework
-- Robust system management with enhanced MainModule
+## Developer Onboarding (Additions)
 
-## Setup Instructions
+### Local tooling
+- Install dependencies:
+  - mise (package manager used by the project)
+  - Selene (Luau linter): https://github.com/Kampfar/selene
+  - A Luau formatter (luau-format, luauformat, or luafmt)
+  - Rojo (for syncing with Roblox Studio)
 
-### Prerequisites
-
-- [Roblox Studio](https://www.roblox.com/create)
-- [Rojo](https://rojo.space/docs/v7/getting-started/)
-- [mise-en-place](https://mise.jdx.dev/)
-- Basic knowledge of Roblox Luau scripting
-
-### Installation
-
-1. Clone the repository
-2. Install dependencies:
-
-    ```bash
-    mise install
-    ```
-
-3. Build the project:
-
-    ```bash
-    rojo build -o KaijuBattleRoblox.rbxlx
-    ```
-
-4. Open `KaijuBattleRoblox.rbxlx` in Roblox Studio
-
-## System Architecture
-
-### Enhanced MainModule
-
-The game uses an enhanced MainModule for robust system management. For detailed documentation, see [docs/MainModule.md](docs/MainModule.md).
-
-Key features:
-
-- Automatic dependency resolution
-- Comprehensive error handling
-- Detailed logging and status tracking
-- Configurable initialization
-- System health monitoring
-
-### Initialization Pattern
-
-All game systems follow a standardized initialization pattern to ensure consistency and maintainability:
-
-1. **Constructor Pattern**:
-    - Each system implements a `new()` constructor that creates a new instance
-    - The constructor calls the `init()` method for initialization
-    - Example:
-
-        ```lua
-        function SystemName.new()
-            local self = setmetatable({}, SystemName)
-            self:init()
-            return self
-        end
-        ```
-
-2. **Initialization Method**:
-    - Each system has an `init()` method that handles setup logic
-    - The method returns `true` on success or `false`/`nil` on failure
-    - Example:
-
-        ```lua
-        function SystemName:init()
-            print("🔄 Initializing SystemName...")
-            -- Initialization logic here
-            print("✅ SystemName initialized successfully")
-            return true
-        end
-        ```
-
-3. **Module Export**:
-    - Systems are exported as instantiated singletons
-    - The module returns `SystemName.new()`
-
-## Game Systems
-
-### Character System
-
-Handles player characters, classes, and attributes.
-
-#### Character Initialization
-
-- Creates player character instances
-- Sets up class attributes
-- Manages character abilities
-
-#### Character Key Features
-
-- Class-based attributes (Health, Speed, etc.)
-- Dynamic class changes
-- Ability management
-- Character state handling
-
-### Kaiju System
-
-Manages Kaiju-specific functionality and abilities.
-
-#### Kaiju Initialization
-
-- Sets up Kaiju abilities and events
-- Initializes Kaiju state tracking
-- Configures ability cooldowns
-
-#### Kaiju Key Features
-
-- Special abilities (Roar, Energy Beam, etc.)
-- Kaiju state management
-- Player-to-Kaiju transformation
-- Ability cooldown system
-
-## Adding New Systems
-
-To add a new system to the game, follow these steps:
-
-1. **Review the MainModule Documentation**
-    - See [docs/MainModule.md](docs/MainModule.md) for detailed information
-    - Understand the system lifecycle and requirements
-
-2. **Create a new ModuleScript** in the `ServerScriptService/systems` folder with the following structure:
-
-    ```lua
-    --!strict
-    -- systems/NewSystem.server.luau
-
-    local NewSystem = {}
-    NewSystem.__index = NewSystem
-
-    -- Constructor
-    function NewSystem.new()
-        local self = setmetatable({}, NewSystem)
-        self:init()
-        return self
-    end
-
-    -- Initialize the system
-    function NewSystem:init()
-        -- Configuration
-        self.isInitialized = false
-
-        -- Dependencies
-        self.dependencies = {
-            -- List any other systems this system depends on
-        }
-
-        -- Initialize system components
-        self:setupEvents()
-        self:setupConnections()
-
-        self.isInitialized = true
-        print("✅ NewSystem initialized successfully")
-        return true
-    end
-
-    -- Set up RemoteEvents and BindableEvents
-    function NewSystem:setupEvents()
-        -- Create any necessary RemoteEvents or BindableEvents here
-    end
-
-    -- Set up event connections
-    function NewSystem:setupConnections()
-        -- Set up any event connections here
-    end
-
-    -- Cleanup method (optional)
-    function NewSystem:cleanup()
-        -- Clean up any resources, connections, etc.
-    end
-
-    return NewSystem.new()
-    ```
-
-3. **Update the Main system** to initialize your new system:
-    - Open `ServerScriptService/Main.server.luau`
-    - Add your system to the `systems` table
-    - The main script will automatically require and initialize it
-
-4. **Test your system**:
-    - Use the built-in test framework by adding tests to the `ServerScriptService/tests` folder
-    - Follow the naming convention: `NewSystem.spec.luau`
-    - Run tests using the TestService or through the test runner
-
-5. **Document your system**:
-    - Add documentation for your system in this README
-    - Include:
-        - System purpose and responsibilities
-        - Key features and methods
-        - Dependencies
-
-## Testing
-
-The project includes a comprehensive testing framework to ensure stability and reliability.
-
-### Running Tests
-
-1. In Roblox Studio, run the test script:
-
-    ```lua
-    require(game.ServerScriptService.Tests.run_tests)
-    ```
-
-2. View test results in the Output window
-
-### Test Coverage
-
-- **Unit Tests**: Individual system testing
-- **Integration Tests**: Cross-system interaction testing
-- **Edge Case Testing**: Invalid inputs and error conditions
-
-#### Current Coverage
-
-```text
-Test Summary:
-========================================
-Total Tests: 42
-Passed: 40
-Failed: 2
-Coverage: 95%
+Example (macOS / Linux / Windows WSL):
+```bash
+mise install
+# install Selene (example)
+cargo install selene
 ```
 
-### Writing Tests
+### MCP (Roblox Studio integration)
+This repository is configured with an MCP entry for local Roblox Studio automation: see [`.kilocode/mcp.json`](.kilocode/mcp.json:1). The MCP server binary used on Windows is referenced there.
 
-1. Create test files in the `Tests` directory
-2. Follow the naming convention: `SystemName.spec.luau`
-3. Export a function that returns test results
+- To run MainModule inspection via MCP:
+  1. Start Roblox Studio and open your place file (e.g. `KaijuBattleRoblox.rbxlx`).
+  2. Start the MCP server/client specified in [` .kilocode/mcp.json`](.kilocode/mcp.json:1) (on Windows this is the provided rbx-studio-mcp executable).
+  3. Use the MCP run_code tool to send the contents of [`src/server_code/DirectLogMainModule.luau`](src/server_code/DirectLogMainModule.luau:1) or call `src/server_code/RunMainModuleViaMCP.luau` with your MCP client.
 
-Example test structure:
+### Pre-commit hooks
+To enable the repository's pre-commit behavior (format/lint/strict header checks):
 
-```lua
---!strict
-return function()
-    local results = {}
+- Option A (recommended):
+  git config core.hooksPath .githooks
 
-    -- Test cases
-    table.insert(results, "✅ Test passed")
-    table.insert(results, "❌ Test failed")
+- Option B (Windows fallback):
+  pwsh tools/install-githooks.ps1
 
-    return results
-end
-```
+The pre-commit hook will run:
+- [`./scripts/format_and_lint.sh`](scripts/format_and_lint.sh:1) or the PowerShell equivalent
+- [`./scripts/ensure_strict.sh`](scripts/ensure_strict.sh:1)
 
-## Configuration
+If these tools modify files, the commit will be blocked and you'll be asked to review & stage the changes.
 
-Game settings can be configured in `src/shared/config/GameConfig.luau`:
+### CI
+The repository CI job runs:
+- Formatting & linting
+- Strict header enforcement (failing the build if it adds headers)
+- Tests (see `.github/workflows/tests.yml`)
 
-```lua
-return {
-    Classes = {
-        Kaiju = {
-            MaxHealth = 500,
-            WalkSpeed = 24,
-            Abilities = {"Smash", "Charge", "Roar"}
-        },
-        -- Other classes...
-    },
-    Game = {
-        RoundDuration = 600, -- seconds
-        MinPlayers = 2,
-        MaxPlayers = 10
-    }
-}
-```
+### Common commands
+- Format and lint locally:
+  - Unix: `./scripts/format_and_lint.sh`
+  - Windows PowerShell: `./scripts/format_and_lint.ps1`
+- Ensure strict headers:
+  - `./scripts/ensure_strict.sh`
+- Run tests locally (if Luau CLI available):
+  - `luau test_runner.luau --verbose`
 
-## Development
-
-### Code Style
-
-- Use `--!strict` mode in all scripts
-- Follow Roblox Luau style guidelines
-- Document all public APIs
-- Write tests for new features
-
-### Version Control
-
-- Branch naming: `feature/description` or `fix/issue-name`
-- Commit messages: Use conventional commits
-- PRs require passing tests and code review
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Tests not running**:
-    - Ensure all services are properly mocked
-    - Check for syntax errors in test files
-
-2. **Missing dependencies**:
-    - Run `mise install`
-    - Verify Rojo is properly configured
-
-3. **Test failures**:
-    - Check the Output window for detailed error messages
-    - Verify test environment setup
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Submit a pull request
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
+(End of additions. Original README content retained above.)

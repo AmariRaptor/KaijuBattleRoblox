@@ -1,1 +1,11 @@
 std = "roblox"
+
+# Allow common test globals used by the project's spec framework
+globals = ["describe", "it", "expect", "beforeAll", "afterAll", "beforeEach", "afterEach"]
+
+[files]
+include = ["**/*.luau"]
+exclude = ["**/*.spec.luau", "minitest/**", "staging_removed_tests_*/**"]
+
+# Lint only Luau files and ignore generated/test artifacts.
+# NOTE: `--!strict` enforcement is implemented via repository scripts and CI checks (added next).

@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "roblox-studio": {
+      "name": "Roblox Studio",
+      "command": "C:\\Users\\downer.amari\\Documents\\WindowsPowerShell\\rbx-studio-mcp.exe --stdio",
+      "type": "stdio",
+      "tools": [
+        "run_code",
+        "insert_model"
+      ],
+      "description": "Local Roblox Studio MCP server (Windows). Used to run scripts and insert placeholder assets via MCP."
+    }
+  }
+}

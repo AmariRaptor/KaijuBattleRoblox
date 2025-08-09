@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+# Pre-commit hook: format, lint, and ensure --!strict headers.
+# If this hook modifies files, it will attempt to stage fixes automatically.
+# If staging fails or unsafe changes are detected, the commit will be aborted with clear instructions.
+
+set -euo pipefail
+
+echo "[pre-commit] Running format_and_lint..."
+if [ -x "./scripts/format_and_lint.sh" ]; then
+  ./scripts/format_and_lint.sh
+else
+  if [ -f "./scripts/format_and_lint.sh" ]; then
+    bash ./scripts/format_and_lint.sh
+  else
+    echo "[pre-commit] Warning: ./scripts/format_and_lint.sh not found; skipping formatting."
+  fi
+fi
+
+echo "[pre-commit] Ensuring --!strict headers..."
+if [ -x "./scripts/ensure_strict.sh" ]; then
+  ./scripts/ensure_strict.sh
+else
+  if [ -f "./scripts/ensure_strict.sh" ]; then
+    bash ./scripts/ensure_strict.sh
+  else
+    echo "[pre-commit] Warning: ./scripts/ensure_strict.sh not found; skipping strict header check."
+  fi
+fi
+
+# If any files were modified by the hooks, attempt to stage them automatically.
+if ! git diff --quiet || ! git diff --cached --quiet; then
+  echo "[pre-commit] Detected repository changes after autofix."
+
+  # Show changed files
+  echo ""
+  git --no-pager status --porcelain
+  echo ""
+  echo "Files changed by hooks (working tree):"
+  git --no-pager diff --name-only
+
+  # Attempt to automatically stage fixes
+  if git rev-parse --git-dir > /dev/null 2>&1; then
+    echo "[pre-commit] Attempting to git add modified files..."
+    git add -A || {
+      echo "::error::Failed to stage autofixes. Please review changes and stage them manually."
+      git --no-pager status --porcelain
+      exit 1
+    }
+
+    # If there are staged changes, allow commit to proceed but inform the user
+    if ! git diff --cached --quiet; then
+      echo "[pre-commit] Autofixes staged. The commit will include these changes."
+      echo "Files staged:"
+      git --no-pager diff --cached --name-only
+      echo "If you do not want autofixes included in this commit, undo staging with 'git reset' and re-run the commit after reviewing."
+      exit 0
+    fi
+  else
+    echo "::error::Git repository not available; cannot stage changes. Please run './scripts/format_and_lint.sh' and './scripts/ensure_strict.sh' manually and commit again."
+    exit 1
+  fi
+fi
+
+exit 0

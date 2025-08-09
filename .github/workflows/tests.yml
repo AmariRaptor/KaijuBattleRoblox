@@ -11,21 +11,42 @@ jobs:
   test:
     name: Run Tests
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
-    
+      with:
+        fetch-depth: 0
+
     - name: Set up Lua
       uses: leafo/gh-actions-lua@v8
       with:
         luaVersion: 'luau'
-    
+
+    - name: Make scripts executable
+      run: |
+        chmod +x ./scripts/*.sh || true
+
+    - name: Format and lint (best-effort)
+      run: |
+        ./scripts/format_and_lint.sh
+
+    - name: Ensure --!strict headers
+      run: |
+        ./scripts/ensure_strict.sh
+        # Fail the job if ensure_strict.sh made changes (indicates files were missing the header)
+        if ! git diff --exit-code --quiet; then
+          echo "::error::Repository modified by ensure_strict.sh (missing --!strict headers). Please run ./scripts/ensure_strict.sh and commit changes."
+          git --no-pager diff --name-only
+          git --no-pager diff
+          exit 1
+        fi
+
     - name: Run tests
       run: |
         echo "Running tests..."
         luau test_runner.luau --verbose
-        
+
     - name: Upload test results
       if: always()
       uses: actions/upload-artifact@v3
