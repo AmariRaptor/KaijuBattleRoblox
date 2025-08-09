@@ -1,4 +1,10 @@
 {
+    "languageMode": "strict",
+    "lint": {
+        "*": true,
+        "LocalUnused": false
+    },
+    "lintErrors": true,
     "globals": [
         "game",
         "workspace",
@@ -8,6 +14,22 @@
         "pcall",
         "tostring",
         "type",
-        "require"
+        "require",
+        "delay",
+        "DebuggerManager",
+        "elapsedTime",
+        "PluginManager",
+        "printidentity",
+        "settings",
+        "spawn",
+        "stats",
+        "tick",
+        "time",
+        "UserSettings",
+        "version",
+        "warn",
+        "Enum",
+        "plugin",
+        "shared"
     ]
 }

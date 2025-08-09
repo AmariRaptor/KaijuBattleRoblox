@@ -1,5 +1,8 @@
 {
     "recommendations": [
-        "johnnymorganz.luau-lsp"
+        "johnnymorganz.luau-lsp",
+        "muoshuu.rojo-ui",
+        "gostrafx.lua-file-creator",
+        "sonnguyen9800.luau-mode-setter"
     ]
 }

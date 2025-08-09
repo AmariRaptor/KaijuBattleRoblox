@@ -74,6 +74,54 @@ function KaijuSystem:init(): boolean
         self.KaijuKilledEvent = newEv
     end
 
+    -- Listen for global UseAbilityRequest so server-validated ability requests reach KaijuSystem without creating module cycles.
+    local useAbilityRemote = eventsFolder:FindFirstChild("UseAbilityRequest")
+    if useAbilityRemote and useAbilityRemote:IsA("RemoteEvent") then
+        useAbilityRemote.OnServerEvent:Connect(function(player: Player, abilityName: string, abilityData: {[string]: any}?)
+            if not player or not abilityName then return end
+
+            -- Prepare player's HRP safely
+            local playerHrp: BasePart? = nil
+            if player.Character and player.Character:IsA("Model") then
+                local found = player.Character:FindFirstChild("HumanoidRootPart")
+                if found and found:IsA("BasePart") then
+                    playerHrp = found :: BasePart
+                end
+            end
+
+            -- Find closest kaiju (by HumanoidRootPart) to the player
+            local chosenKaiju: Model? = nil
+            local closest = math.huge
+            for _, st in pairs(self.kaijus) do
+                if st and st.model and st.model:IsA("Model") then
+                    local origin = st.model:FindFirstChild("HumanoidRootPart")
+                    if origin and origin:IsA("BasePart") and playerHrp then
+                        local dist = (playerHrp.Position - (origin :: BasePart).Position).Magnitude
+                        if dist < closest then
+                            closest = dist
+                            chosenKaiju = st.model
+                        end
+                    end
+                end
+            end
+
+            if chosenKaiju then
+                pcall(function()
+                    self:onAbilityUsed(player, chosenKaiju, abilityName, abilityData)
+                end)
+            end
+        end)
+    end
+
+    -- Listen for Kaiju death bindable (MatchSystem fires this)
+    local kaijuBindable = eventsFolder:FindFirstChild("KaijuDiedBindable")
+    if kaijuBindable and kaijuBindable:IsA("BindableEvent") then
+        kaijuBindable.Event:Connect(function(kaijuState)
+            -- KaijuSystem may want to perform cleanup or scoring here (scoring handled in KaijuSystem itself)
+            -- No-op placeholder
+        end)
+    end
+
     print("✅ KaijuSystem initialized")
     return true
 end
@@ -182,39 +230,56 @@ function KaijuSystem:spawnKaiju(spawnPosition: Vector3?, defName: string?): Mode
 end
 
 function KaijuSystem:setupAbilities(kaiju: Model)
-    if not kaiju or not kaiju:IsA("Model") then error("Invalid Kaiju model provided") end
+    if not kaiju or not kaiju:IsA("Model") then
+        error("Invalid Kaiju model provided")
+    end
 
-    local energyBeam = kaiju:FindFirstChild("EnergyBeam")
-    if not (energyBeam and energyBeam:IsA("RemoteEvent")) then
+    -- EnergyBeam RemoteEvent (ensure proper RemoteEvent instance)
+    local existingEB = kaiju:FindFirstChild("EnergyBeam")
+    local energyBeam: RemoteEvent
+    if existingEB and existingEB:IsA("RemoteEvent") then
+        energyBeam = existingEB :: RemoteEvent
+    else
         energyBeam = Instance.new("RemoteEvent")
         energyBeam.Name = "EnergyBeam"
         energyBeam.Parent = kaiju
     end
+
     energyBeam.OnServerEvent:Connect(function(player: Player, targetPosition: Vector3)
         self:onAbilityUsed(player, kaiju, "EnergyBeam", { target = targetPosition })
     end)
 
-    local roarEvent = kaiju:FindFirstChild("RoarEvent")
-    if not (roarEvent and roarEvent:IsA("RemoteEvent")) then
+    -- Roar RemoteEvent
+    local existingRoarEvent = kaiju:FindFirstChild("RoarEvent")
+    local roarEvent: RemoteEvent
+    if existingRoarEvent and existingRoarEvent:IsA("RemoteEvent") then
+        roarEvent = existingRoarEvent :: RemoteEvent
+    else
         roarEvent = Instance.new("RemoteEvent")
         roarEvent.Name = "RoarEvent"
         roarEvent.Parent = kaiju
     end
+
     roarEvent.OnServerEvent:Connect(function(player: Player, ...)
         self:onAbilityUsed(player, kaiju, "Roar", ...)
     end)
 
-    -- Ensure there is a Roar sound
-    local roarSound = kaiju:FindFirstChild("Roar")
-    if not (roarSound and roarSound:IsA("Sound")) then
+    -- Roar sound (ensure proper Sound instance)
+    local existingRoarSound = kaiju:FindFirstChild("Roar")
+    local roarSound: Sound
+    if existingRoarSound and existingRoarSound:IsA("Sound") then
+        roarSound = existingRoarSound :: Sound
+    else
         roarSound = Instance.new("Sound")
         roarSound.Name = "Roar"
         local sid = (GameConfig and GameConfig.Kaiju and GameConfig.Kaiju.Abilities and GameConfig.Kaiju.Abilities.Roar and GameConfig.Kaiju.Abilities.Roar.SoundId) or nil
-        if sid then roarSound.SoundId = "rbxassetid://" .. tostring(sid) end
+        if sid then
+            roarSound.SoundId = "rbxassetid://" .. tostring(sid)
+        end
         roarSound.Parent = kaiju
     end
 
-    return { energyBeam = energyBeam :: RemoteEvent, roarEvent = roarEvent :: RemoteEvent, roarSound = roarSound :: Sound }
+    return { energyBeam = energyBeam, roarEvent = roarEvent, roarSound = roarSound }
 end
 
 function KaijuSystem:onAbilityUsed(player: Player, kaijuModel: Model, abilityName: string, abilityData: { [string]: any }?)
@@ -418,15 +483,14 @@ function KaijuSystem:handleKaijuDeath(kaijuState: KaijuState)
         end
     end
 
-    pcall(function()
-        local msModule = script.Parent:FindFirstChild("MatchSystem")
-        if msModule then
-            local matchSys = require(msModule)
-            if matchSys and type(matchSys.onKaijuKilled) == "function" then
-                pcall(function() matchSys:onKaijuKilled() end)
-            end
+    -- Notify match system via BindableEvent (avoid module cycles)
+    local eventsFolder = ReplicatedStorage:FindFirstChild("GameEvents")
+    if eventsFolder then
+        local be = eventsFolder:FindFirstChild("KaijuDiedBindable")
+        if be and be:IsA("BindableEvent") then
+            pcall(function() be:Fire(kaijuState) end)
         end
-    end)
+    end
 
     if self.KaijuKilledEvent then
         pcall(function()

@@ -45,6 +45,14 @@ type AbilitiesConfig = {
     Defaults: { [string]: AbilityDef }?,
 }
 
+type MapConfig = {
+    SpawnPoints: { Vector3 }?,
+    Props: {
+        DefaultSize: Vector3?,
+        DefaultHealth: number?,
+    }?,
+}
+
 type GameConfig = {
     Classes: {
         Kaiju: ClassAttributes,
@@ -68,6 +76,7 @@ type GameConfig = {
         Respawn: RespawnConfig,
     },
     Abilities: AbilitiesConfig,
+    Map: MapConfig?,
 }
 
 local Config: GameConfig = {
@@ -158,6 +167,19 @@ local Config: GameConfig = {
             Shield = { Cost = 30, Cooldown = 10 },
             Primary = { Cost = 0, Cooldown = 0.5 },
             Heavy = { Cost = 10, Cooldown = 5 },
+        },
+    },
+
+    -- Map/prototype settings for spawn points and destructible prop defaults
+    Map = {
+        SpawnPoints = {
+            Vector3.new(0, 5, 0),
+            Vector3.new(50, 5, 0),
+            Vector3.new(-50, 5, 0),
+        },
+        Props = {
+            DefaultSize = Vector3.new(4, 4, 4),
+            DefaultHealth = 200,
         },
     },
 }
