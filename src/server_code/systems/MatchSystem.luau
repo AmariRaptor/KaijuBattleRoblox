@@ -37,15 +37,14 @@ type PlayerMatchState = {
 local MatchSystem = {}
 MatchSystem.__index = MatchSystem
 
-function MatchSystem.new()
+function MatchSystem.new(): any
     local self = setmetatable({} :: any, MatchSystem)
-    -- initial fields (cast where necessary for strict)
     self.state = "lobby"
     self.players = {} :: { [string]: PlayerMatchState }
     self.matchId = nil :: string?
     self.timeRemaining = 0
-    self._heartbeatConn = (nil :: RBXScriptConnection?)
-    self.MatchStateUpdate = (nil :: RemoteEvent?)
+    self._heartbeatConn = nil :: RBXScriptConnection?
+    self.MatchStateUpdate = nil :: RemoteEvent?
 
     -- Ensure GameEvents / MatchStateUpdate exist
     local eventsFolder = ReplicatedStorage:FindFirstChild("GameEvents")
@@ -55,133 +54,14 @@ function MatchSystem.new()
         eventsFolder.Parent = ReplicatedStorage
     end
 
-    local function ensureRemote(folder: Instance, name: string): RemoteEvent
-        local existing = folder:FindFirstChild(name)
-        if existing and existing:IsA("RemoteEvent") then
-            return existing :: RemoteEvent
-        end
+    local matchEvent = eventsFolder:FindFirstChild("MatchStateUpdate")
+    if matchEvent and matchEvent:IsA("RemoteEvent") then
+        self.MatchStateUpdate = matchEvent :: RemoteEvent
+    else
         local ev = Instance.new("RemoteEvent")
-        ev.Name = name
-        ev.Parent = folder
-        return ev :: RemoteEvent
-    end
-
-    self.MatchStateUpdate = ensureRemote(eventsFolder, "MatchStateUpdate")
-    self.PlayerInput = ensureRemote(eventsFolder, "PlayerInput")
-    self.UseAbilityRequest = ensureRemote(eventsFolder, "UseAbilityRequest")
-    self.DamageReport = ensureRemote(eventsFolder, "DamageReport")
-
-    -- Create PowerEvents folder/remotes used by client PowerInput
-    local powerFolder = ReplicatedStorage:FindFirstChild("PowerEvents")
-    if not powerFolder then
-        powerFolder = Instance.new("Folder")
-        powerFolder.Name = "PowerEvents"
-        powerFolder.Parent = ReplicatedStorage
-    end
-    local PowerActivated = ensureRemote(powerFolder, "PowerActivated")
-    local PowerCooldown = ensureRemote(powerFolder, "PowerCooldown")
-
-    -- Best-effort require other systems for validation/dispatch (do not require KaijuSystem to avoid cyclic deps)
-    local CharacterSystem = nil
-    local ScoringSystem = nil
-    pcall(function()
-        local mod = script.Parent:FindFirstChild("CharacterSystem")
-        if mod and mod:IsA("ModuleScript") then
-            CharacterSystem = require(mod)
-        end
-    end)
-    pcall(function()
-        local mod = script.Parent:FindFirstChild("ScoringSystem")
-        if mod and mod:IsA("ModuleScript") then
-            ScoringSystem = require(mod)
-        end
-    end)
-
-    -- Ensure BindableEvent for Kaiju death exists in GameEvents and connect (used instead of requiring KaijuSystem)
-    local kaijuBindable = eventsFolder:FindFirstChild("KaijuDiedBindable")
-    if not (kaijuBindable and kaijuBindable:IsA("BindableEvent")) then
-        kaijuBindable = Instance.new("BindableEvent")
-        kaijuBindable.Name = "KaijuDiedBindable"
-        kaijuBindable.Parent = eventsFolder
-    end
-
-    kaijuBindable.Event:Connect(function(kaijuState)
-        -- kaijuState is optional; notify match system that Kaiju died
-        pcall(function()
-            self:onKaijuKilled()
-        end)
-    end)
-
-    -- PlayerInput handler: record last input server-side for optional reconciliation
-    if self.PlayerInput and self.PlayerInput:IsA("RemoteEvent") then
-        self.PlayerInput.OnServerEvent:Connect(function(player: Player, payload: { direction: Vector3, timestamp: number, position: Vector3 }?)
-            if not player or not payload then return end
-            local uid = tostring(player.UserId)
-            local pstate = if self.players then self.players[uid] else nil
-            if pstate then
-                pstate.lastInput = payload
-                pstate.lastInputTime = tick()
-            end
-            -- Potential server-side sanity checks can be added here
-        end)
-    end
-
-    -- UseAbilityRequest handler: validate via CharacterSystem then dispatch to KaijuSystem / power events
-    if self.UseAbilityRequest and self.UseAbilityRequest:IsA("RemoteEvent") then
-        self.UseAbilityRequest.OnServerEvent:Connect(function(player: Player, abilityName: string, abilityData: {[string]: any}?)
-            if not player or not abilityName then return end
-
-            -- Validate ability via CharacterSystem if available
-            local valid, reason = true, nil
-            if CharacterSystem and type(CharacterSystem.validateAbilityUse) == "function" then
-                local ok, res = pcall(function()
-                    return CharacterSystem.validateAbilityUse(player, abilityName)
-                end)
-                if ok then
-                    if type(res) == "boolean" then
-                        valid = res
-                    elseif type(res) == "table" then
-                        valid = true
-                    end
-                else
-                    valid = false
-                    reason = tostring(res)
-                end
-            end
-
-            if not valid then
-                warn("[MatchSystem] Ability denied:", player.Name, abilityName, reason)
-                return
-            end
-
-            -- Broadcast activation for client-side FX
-            if PowerActivated and PowerActivated:IsA("RemoteEvent") then
-                pcall(function() PowerActivated:FireAllClients(player, abilityName) end)
-            end
-
-            -- Kaiju dispatch is handled by KaijuSystem listening to GameEvents.UseAbilityRequest (to avoid module cycles).
-            -- MatchSystem validates abilities and triggers PowerActivated/PowerCooldown; KaijuSystem will act on validated requests independently.
-
-            -- Optionally notify clients about cooldowns
-            if PowerCooldown and PowerCooldown:IsA("RemoteEvent") then
-                local cooldown = nil
-                if GameConfig and GameConfig.Abilities and GameConfig.Abilities.Defaults and GameConfig.Abilities.Defaults[abilityName] and GameConfig.Abilities.Defaults[abilityName].Cooldown then
-                    cooldown = GameConfig.Abilities.Defaults[abilityName].Cooldown
-                end
-                if cooldown then
-                    pcall(function() PowerCooldown:FireClient(player, abilityName, cooldown) end)
-                end
-            end
-        end)
-    end
-
-    -- DamageReport handler (logging / placeholder - server should be authoritative for damage)
-    if self.DamageReport and self.DamageReport:IsA("RemoteEvent") then
-        self.DamageReport.OnServerEvent:Connect(function(player: Player, dmgData: { targetUserId: number, amount: number }?)
-            if not player or not dmgData then return end
-            -- For now just log; authoritative damage should be applied by server systems
-            warn("[MatchSystem] DamageReport received from", player.Name, dmgData)
-        end)
+        ev.Name = "MatchStateUpdate"
+        ev.Parent = eventsFolder
+        self.MatchStateUpdate = ev :: RemoteEvent
     end
 
     return self
@@ -207,11 +87,10 @@ function MatchSystem:addPlayer(player: Player)
     self.players[uid] = pstate
 
     -- Character death handler
-    local function onCharacterAdded(character: Instance?)
+    local function onCharacterAdded(character)
         if not character or not character:IsA("Model") then return end
-        local humanoidInst = character:FindFirstChildOfClass("Humanoid")
-        if humanoidInst and humanoidInst:IsA("Humanoid") then
-            local humanoid = humanoidInst :: Humanoid
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        if humanoid and humanoid:IsA("Humanoid") then
             humanoid.Died:Connect(function()
                 self:onPlayerDied(player)
             end)
@@ -219,11 +98,14 @@ function MatchSystem:addPlayer(player: Player)
     end
 
     if player.Character and player.Character:IsA("Model") then
-        onCharacterAdded(player.Character :: Instance)
+        onCharacterAdded(player.Character)
     end
 
-    player.CharacterAdded:Connect(function(char: Instance)
-        onCharacterAdded(char)
+    player.CharacterAdded:Connect(function(char)
+        -- slight defer to allow character to fully setup
+        task.defer(function()
+            onCharacterAdded(char)
+        end)
     end)
 
     self:sendStateUpdate()
@@ -247,7 +129,7 @@ function MatchSystem:onPlayerDied(player: Player)
     if GameConfig and GameConfig.Game and GameConfig.Game.Respawn and GameConfig.Game.Respawn.Enabled then
         state.lives = (state.lives or 0) - 1
         if state.lives > 0 then
-            local respawnTime = (GameConfig and GameConfig.Game and GameConfig.Game.Respawn and GameConfig.Game.Respawn.RespawnTime) or 10
+            local respawnTime = (GameConfig.Game.Respawn.RespawnTime) or 10
             task.spawn(function()
                 task.wait(respawnTime)
                 if not self.players or not self.players[uid] or self.players[uid].isEliminated then
@@ -306,18 +188,18 @@ function MatchSystem:startMatch(duration: number?): (boolean, string?)
 
     if self._heartbeatConn then
         pcall(function()
-            (self._heartbeatConn :: RBXScriptConnection):Disconnect()
+            self._heartbeatConn:Disconnect()
         end)
-        self._heartbeatConn = (nil :: RBXScriptConnection?)
+        self._heartbeatConn = nil
     end
 
-    self._heartbeatConn = (RunService.Heartbeat:Connect(function(dt: number)
+    self._heartbeatConn = RunService.Heartbeat:Connect(function(dt)
         if self.state ~= "running" then return end
         self.timeRemaining = math.max(0, (self.timeRemaining or 0) - dt)
         if self.timeRemaining <= 0 then
             self:handleTimeout()
         end
-    end) :: RBXScriptConnection)
+    end)
 
     self:sendStateUpdate()
     print("[MatchSystem] Match started:", self.matchId, "duration:", dur)
@@ -334,9 +216,9 @@ function MatchSystem:endMatch(result: string?)
     self.state = "ended"
     if self._heartbeatConn then
         pcall(function()
-            (self._heartbeatConn :: RBXScriptConnection):Disconnect()
+            self._heartbeatConn:Disconnect()
         end)
-        self._heartbeatConn = (nil :: RBXScriptConnection?)
+        self._heartbeatConn = nil
     end
 
     local payload = {
@@ -354,7 +236,9 @@ function MatchSystem:endMatch(result: string?)
     end
 
     if self.MatchStateUpdate then
-        self.MatchStateUpdate:FireAllClients(payload)
+        pcall(function()
+            self.MatchStateUpdate:FireAllClients(payload)
+        end)
     end
 
     print("[MatchSystem] Match ended:", self.matchId, "result:", result)
@@ -376,7 +260,9 @@ function MatchSystem:sendStateUpdate()
         })
     end
     if self.MatchStateUpdate then
-        self.MatchStateUpdate:FireAllClients(payload)
+        pcall(function()
+            self.MatchStateUpdate:FireAllClients(payload)
+        end)
     end
 end
 

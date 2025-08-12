@@ -45,14 +45,6 @@ type AbilitiesConfig = {
     Defaults: { [string]: AbilityDef }?,
 }
 
-type MapConfig = {
-    SpawnPoints: { Vector3 }?,
-    Props: {
-        DefaultSize: Vector3?,
-        DefaultHealth: number?,
-    }?,
-}
-
 type GameConfig = {
     Classes: {
         Kaiju: ClassAttributes,
@@ -69,14 +61,20 @@ type GameConfig = {
         MaxHealth: number,
         RepairRate: number,
     },
+    -- Spawn/map related defaults (used by SpawnSystem)
     Game: {
         RoundDuration: number,
         MinPlayers: number,
         MaxPlayers: number,
         Respawn: RespawnConfig,
+        Spawn: {
+            KaijuSpawnPoints: { Vector3 }?,
+            PropCount: number?,
+            PropHealth: number?,
+            AutoStartWhenMinPlayers: boolean?,
+        }?,
     },
     Abilities: AbilitiesConfig,
-    Map: MapConfig?,
 }
 
 local Config: GameConfig = {
@@ -156,6 +154,13 @@ local Config: GameConfig = {
             RespawnTime = 10,
             ExtraLives = 2,
         },
+        -- Spawn defaults used by SpawnSystem (safe defaults)
+        Spawn = {
+            KaijuSpawnPoints = { Vector3.new(0, 10, 0) },
+            PropCount = 20,
+            PropHealth = 200,
+            AutoStartWhenMinPlayers = true,
+        },
     },
     Abilities = {
         EnergyMax = 100,
@@ -167,19 +172,6 @@ local Config: GameConfig = {
             Shield = { Cost = 30, Cooldown = 10 },
             Primary = { Cost = 0, Cooldown = 0.5 },
             Heavy = { Cost = 10, Cooldown = 5 },
-        },
-    },
-
-    -- Map/prototype settings for spawn points and destructible prop defaults
-    Map = {
-        SpawnPoints = {
-            Vector3.new(0, 5, 0),
-            Vector3.new(50, 5, 0),
-            Vector3.new(-50, 5, 0),
-        },
-        Props = {
-            DefaultSize = Vector3.new(4, 4, 4),
-            DefaultHealth = 200,
         },
     },
 }
